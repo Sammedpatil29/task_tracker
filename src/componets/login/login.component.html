@@ -1,1 +1,98 @@
-<p>login works!</p>
+<div class="auth-wrapper">
+
+  <div class="auth-card">
+
+    <!-- Header -->
+    <div class="auth-header">
+      <h1>
+        {{ mode === 'login' ? 'Welcome Back' : 'Create Account' }}
+        <span class="emoji">{{ emoji }}</span>
+      </h1>
+      <p>
+        {{ mode === 'login'
+          ? 'Sign in to continue your discipline journey'
+          : 'Start tracking your discipline today' }}
+      </p>
+    </div>
+
+    <!-- LOGIN -->
+    <form *ngIf="mode === 'login'" (ngSubmit)="submit()">
+
+      <input
+        type="email"
+        placeholder="📧 Email"
+        [(ngModel)]="loginEmail"
+        name="loginEmail"
+        required />
+
+      <div class="password-box">
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="🔒 Password"
+          [(ngModel)]="loginPassword"
+          name="loginPassword"
+          required />
+        <span (click)="showPassword = !showPassword">
+          {{ showPassword ? '🙈' : '👁️' }}
+        </span>
+      </div>
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Signing in...' : 'Sign In 🚀' }}
+      </button>
+
+    </form>
+
+    <!-- SIGNUP -->
+    <form *ngIf="mode === 'signup'" (ngSubmit)="submit()">
+
+      <div class="d-flex justify-content-around align-items-baseline gap-3">
+        <input
+        type="text"
+        placeholder="👤 Full Name"
+        [(ngModel)]="name"
+        name="name"
+        required />
+        <span class="fs-4" style="cursor: pointer;" (click)="changeEmoji()">{{ userEmoji }}</span>
+      </div>
+
+      <input
+        type="email"
+        placeholder="📧 Email"
+        [(ngModel)]="email"
+        name="email"
+        required />
+
+      <div class="password-box">
+        <input
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="🔐 Password"
+          [(ngModel)]="password"
+          name="password"
+          required />
+        <span (click)="showPassword = !showPassword">
+          {{ showPassword ? '🙈' : '👁️' }}
+        </span>
+      </div>
+
+      <button type="submit" [disabled]="loading">
+        {{ loading ? 'Creating account...' : 'Sign Up ✨' }}
+      </button>
+
+    </form>
+
+    <!-- Footer -->
+    <div class="auth-footer">
+      <span>
+        {{ mode === 'login'
+          ? "Don't have an account?"
+          : 'Already have an account?' }}
+      </span>
+      <b (click)="toggleMode()">
+        {{ mode === 'login' ? 'Sign Up' : 'Sign In' }}
+      </b>
+    </div>
+
+  </div>
+
+</div>

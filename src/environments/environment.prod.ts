@@ -1,5 +1,5 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://task-tracker-backend-gb0d.onrender.com/'
+  apiUrl: 'http://discipline-tracker-backend-xckgge-ddd24d-203-57-85-153.sslip.io/'
 };
 

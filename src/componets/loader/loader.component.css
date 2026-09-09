@@ -1,0 +1,177 @@
+.discipline-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 48px 24px;
+  min-height: 55vh;
+  width: 100%;
+}
+
+.discipline-loader-container.fullscreen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(248, 250, 252, 0.88);
+  backdrop-filter: blur(8px);
+  z-index: 9999;
+}
+
+/* Spinner Visual Container */
+.loader-visual {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Outer Gradient Ring */
+.spinner-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  border: 3.5px solid transparent;
+  border-top-color: #10b981;
+  border-right-color: #059669;
+  animation: spinRing 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.25);
+}
+
+/* Inner Counter-Rotating Ring */
+.spinner-ring.inner {
+  top: 8px;
+  left: 8px;
+  width: calc(100% - 16px);
+  height: calc(100% - 16px);
+  border-width: 2.5px;
+  border-top-color: #38bdf8;
+  border-left-color: #0284c7;
+  border-right-color: transparent;
+  animation: spinRingReverse 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+}
+
+/* Center Pulse Icon */
+.loader-center-icon {
+  font-size: 24px;
+  animation: pulseFlame 1.4s ease-in-out infinite alternate;
+  z-index: 2;
+  user-select: none;
+}
+
+/* Text Group */
+.loader-text-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  max-width: 320px;
+}
+
+.loader-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.2px;
+}
+
+.loader-subtitle {
+  margin: 0;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+/* Progress Shimmer Bar */
+.loader-progress-bar {
+  width: 140px;
+  height: 3px;
+  background: var(--border-color);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-top: 8px;
+  position: relative;
+}
+
+.progress-indicator {
+  position: absolute;
+  top: 0;
+  left: -50%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, #10b981, #059669, transparent);
+  border-radius: 999px;
+  animation: shimmerMove 1.6s ease-in-out infinite;
+}
+
+/* Size Variants */
+.size-sm {
+  min-height: auto;
+  padding: 16px;
+  gap: 10px;
+}
+.size-sm .loader-visual {
+  width: 40px;
+  height: 40px;
+}
+.size-sm .spinner-ring {
+  border-width: 2.5px;
+}
+.size-sm .spinner-ring.inner {
+  display: none;
+}
+.size-sm .loader-center-icon {
+  font-size: 15px;
+}
+.size-sm .loader-title {
+  font-size: 13px;
+}
+
+.size-lg .loader-visual {
+  width: 90px;
+  height: 90px;
+}
+.size-lg .loader-center-icon {
+  font-size: 32px;
+}
+.size-lg .loader-title {
+  font-size: 17px;
+}
+
+/* Keyframes */
+@keyframes spinRing {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes spinRingReverse {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(-360deg); }
+}
+
+@keyframes pulseFlame {
+  0% {
+    transform: scale(0.88);
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(1.15);
+    opacity: 1;
+    filter: drop-shadow(0 0 6px rgba(249, 115, 22, 0.4));
+  }
+}
+
+@keyframes shimmerMove {
+  0% { left: -50%; }
+  100% { left: 100%; }
+}
+

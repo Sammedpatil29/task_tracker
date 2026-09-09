@@ -1,0 +1,75 @@
+<div class="app-shell">
+  <!-- SLIM ICON-ONLY SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo" title="Discipline Tracker">
+        <span class="logo-icon">🔥</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu (Icons only) -->
+    <nav class="sidebar-nav">
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.path"
+        routerLinkActive="active"
+        [title]="item.label"
+        class="nav-link">
+        <span class="nav-icon">{{ item.icon }}</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- MAIN WRAPPER -->
+  <div class="main-wrapper">
+    <!-- TOP NAV -->
+    <header class="topbar">
+      <div class="topbar-left">
+        📈<span class="app-brand"> Discipline Tracker</span>
+        <!-- <span class="separator">/</span>
+        <span class="tagline">📈 Discipline Tracker</span> -->
+      </div>
+
+      <div class="topbar-right">
+        <!-- Theme Toggle Button -->
+        <button
+          class="btn-theme-toggle"
+          (click)="toggleTheme()"
+          [title]="(themeService.isDark$ | async) ? 'Switch to Light Mode ☀️' : 'Switch to Dark Mode 🌙'">
+          <span class="theme-icon">{{ (themeService.isDark$ | async) ? '☀️' : '🌙' }}</span>
+        </button>
+
+        <div class="user-pill">
+          <span class="emoji">{{ userEmoji }}</span>
+          <span class="name">{{ userName | titlecase }}</span>
+        </div>
+        <button class="btn-logout" (click)="logout()" title="Sign out of account">
+          <span>Logout 🚪</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- MAIN ROUTER OUTLET -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- HYDRATION ALERT FLOATING TOAST -->
+  <div class="hydration-toast" *ngIf="hydrationService.showReminder$ | async">
+    <div class="toast-glass">
+      <div class="toast-icon">💧</div>
+      <div class="toast-content">
+        <h4 class="toast-title">Hydration Reminder</h4>
+        <p class="toast-text">Take a moment and have some water 🥤</p>
+      </div>
+      <button class="toast-btn-action" (click)="hydrationService.dismissReminder()" title="Done">
+        Got it! ✨
+      </button>
+      <button class="toast-close" (click)="hydrationService.dismissReminder()" title="Dismiss">✕</button>
+    </div>
+  </div>
+
+  <!-- GLOBAL MODAL & PROMPTS -->
+  <app-modal></app-modal>
+</div>

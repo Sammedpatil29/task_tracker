@@ -1,0 +1,67 @@
+<div class="modal-backdrop" *ngIf="modalService.isOpen" (click)="onOverlayClick($event)">
+  <div class="modal-card" [class.destructive]="modalService.config.isDestructive">
+    
+    <!-- Modal Header -->
+    <div class="modal-header">
+      <h3 class="modal-title">{{ modalService.config.title }}</h3>
+      <button class="modal-close-btn" (click)="modalService.handleCancel()" title="Close">✕</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="modal-body">
+      <p class="modal-message" *ngIf="modalService.config.message">
+        {{ modalService.config.message }}
+      </p>
+
+      <!-- Add Habit Form Specific Inputs -->
+      <div *ngIf="modalService.config.type === 'add-task'" class="modal-form">
+        <div class="form-group">
+          <label class="form-label">Habit Name</label>
+          <input
+            type="text"
+            [(ngModel)]="modalService.config.taskName"
+            placeholder="e.g. Read 20 mins, Gym Workout, Coding..."
+            class="modal-input"
+            autofocus
+            (keyup.enter)="modalService.handleConfirm()"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Weekly Frequency Target (Days/Week)</label>
+          <div class="frequency-chips">
+            <button
+              type="button"
+              *ngFor="let num of frequencies"
+              class="chip"
+              [class.active]="modalService.config.taskTarget === num"
+              (click)="modalService.config.taskTarget = num">
+              {{ num }}x
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Actions -->
+    <div class="modal-footer">
+      <button
+        *ngIf="modalService.config.type !== 'alert'"
+        type="button"
+        class="btn-modal btn-cancel"
+        (click)="modalService.handleCancel()">
+        {{ modalService.config.cancelText || 'Cancel' }}
+      </button>
+
+      <button
+        type="button"
+        class="btn-modal btn-confirm"
+        [class.btn-destructive]="modalService.config.isDestructive"
+        (click)="modalService.handleConfirm()">
+        {{ modalService.config.confirmText || 'OK' }}
+      </button>
+    </div>
+
+  </div>
+</div>
+

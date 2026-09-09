@@ -1,0 +1,190 @@
+<div class="settings-page">
+  <div class="header">
+    <h2>⚙️ Account & Profile Settings</h2>
+    <p>Manage your personal profile, customize your discipline avatar, and configure hydration reminders.</p>
+  </div>
+
+  @if (isLoading) {
+    <app-loader message="Loading your account settings..." subMessage="Fetching profile preferences and hydration configuration"></app-loader>
+  } @else {
+    <div class="settings-container">
+      
+      <!-- PROFILE CARD -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h3>👤 Edit Personal Profile</h3>
+          <span class="badge-status">Active Account</span>
+        </div>
+
+        <div class="profile-preview">
+          <div class="avatar-large">{{ userEmoji }}</div>
+          <div class="profile-info">
+            <h4>{{ userName || 'Discipline User' }}</h4>
+            <p>{{ userEmail }}</p>
+          </div>
+        </div>
+
+        <form (ngSubmit)="saveProfile()" class="settings-form">
+          
+          <!-- Full Name (Editable) -->
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input
+              type="text"
+              [(ngModel)]="userName"
+              name="userName"
+              placeholder="Your full name"
+              required
+              class="form-control"
+            />
+          </div>
+
+          <!-- Email (Strictly Non-Editable) -->
+          <div class="form-group">
+            <div class="label-with-lock">
+              <label class="form-label">Email Address</label>
+              <span class="locked-tag">🔒 Non-editable</span>
+            </div>
+            <input
+              type="email"
+              [value]="userEmail"
+              disabled
+              readonly
+              class="form-control form-control-disabled"
+            />
+            <small class="hint-text">For security reasons, account email addresses cannot be altered.</small>
+          </div>
+
+          <!-- Avatar Emoji Selector (Editable) -->
+          <div class="form-group">
+            <label class="form-label">Choose Avatar Emoji</label>
+            <div class="emoji-grid">
+              <button
+                type="button"
+                *ngFor="let em of availableEmojis"
+                class="emoji-btn"
+                [class.active]="userEmoji === em"
+                (click)="selectEmoji(em)">
+                {{ em }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Save Button -->
+          <div class="form-actions">
+            <button
+              type="submit"
+              class="btn-save"
+              [disabled]="isSaving">
+              <span *ngIf="isSaving">Saving... ⏳</span>
+              <span *ngIf="!isSaving">💾 Save Profile Changes</span>
+            </button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- THEME & APPEARANCE CARD -->
+      <div class="settings-card">
+        <div class="card-header">
+          <div>
+            <h3>🎨 Appearance & Theme</h3>
+            <p class="card-desc">Personalize the look and feel of your Discipline Tracker interface.</p>
+          </div>
+          <span class="badge-status">
+            {{ (themeService.theme$ | async) | titlecase }} Mode
+          </span>
+        </div>
+
+        <div class="theme-options-grid">
+          <div
+            *ngFor="let opt of themeOptions"
+            class="theme-card-option"
+            [class.active]="(themeService.theme$ | async) === opt.value"
+            (click)="selectTheme(opt.value)">
+            <div class="theme-icon-box">{{ opt.icon }}</div>
+            <div class="theme-option-info">
+              <span class="theme-option-title">{{ opt.label }}</span>
+              <span class="theme-option-desc">{{ opt.desc }}</span>
+            </div>
+            <div class="theme-check" *ngIf="(themeService.theme$ | async) === opt.value">✓</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HYDRATION & SOUND REMINDERS CARD -->
+      <div class="settings-card hydration-card">
+        <div class="card-header">
+          <div>
+            <h3>💧 Hydration & Audio Reminders</h3>
+            <p class="card-desc">Scheduled water reminders to keep focus and discipline sharp.</p>
+          </div>
+          <span class="badge-status" [class.badge-inactive]="!hydrationEnabled">
+            {{ hydrationEnabled ? 'Active' : 'Muted' }}
+          </span>
+        </div>
+
+        <div class="hydration-settings-form">
+          
+          <!-- Enable Reminder Switch -->
+          <div class="setting-row">
+            <div class="setting-meta">
+              <span class="setting-title">Enable Hydration Reminders</span>
+              <span class="setting-desc">Show on-screen popups and alerts during active tracking</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="hydrationEnabled">
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- Sound Alert Switch & Test -->
+          <div class="setting-row">
+            <div class="setting-meta">
+              <span class="setting-title">Voice & Chime Sound Alert (🔊)</span>
+              <span class="setting-desc">Plays a water chime and announces: <em>"Take a moment and have some water"</em></span>
+            </div>
+            <div class="sound-controls">
+              <button type="button" class="btn-test-sound" (click)="testChime()" title="Play a preview alert">
+                <span>🔊 Test Alert</span>
+              </button>
+              <label class="switch">
+                <input type="checkbox" [(ngModel)]="hydrationSoundEnabled" [disabled]="!hydrationEnabled">
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Alert Time Duration / Interval Options -->
+          <div class="setting-section">
+            <label class="form-label">Alert Interval Frequency</label>
+            <p class="hint-text">Choose how frequently you want hydration alerts to trigger:</p>
+            <div class="interval-chips">
+              <button
+                type="button"
+                *ngFor="let opt of intervalOptions"
+                class="interval-chip"
+                [class.active]="hydrationIntervalMinutes === opt.value"
+                [disabled]="!hydrationEnabled"
+                (click)="setInterval(opt.value)">
+                {{ opt.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Save Hydration Settings Button -->
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn-save btn-hydration-save"
+              (click)="saveHydrationSettings()">
+              <span>💾 Save Hydration Preferences</span>
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  }
+</div>

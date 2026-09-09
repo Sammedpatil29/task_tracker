@@ -4,95 +4,274 @@
 
     <!-- Header -->
     <div class="auth-header">
-      <h1>
-        {{ mode === 'login' ? 'Welcome Back' : 'Create Account' }}
+      <h1 *ngIf="mode === 'login'">
+        Welcome Back
         <span class="emoji">{{ emoji }}</span>
       </h1>
-      <p>
-        {{ mode === 'login'
-          ? 'Sign in to continue your discipline journey'
-          : 'Start tracking your discipline today' }}
+      <h1 *ngIf="mode === 'signup' && !otpStep">
+        Create Account
+        <span class="emoji">{{ emoji }}</span>
+      </h1>
+      <h1 *ngIf="mode === 'signup' && otpStep">
+        Verify Your Email
+        <span class="emoji">📬</span>
+      </h1>
+      <h1 *ngIf="mode === 'forgot'">
+        Reset Password
+        <span class="emoji">🔐</span>
+      </h1>
+
+      <p *ngIf="mode === 'login'">
+        Sign in to continue your discipline journey
+      </p>
+      <p *ngIf="mode === 'signup' && !otpStep">
+        Start tracking your habits and momentum
+      </p>
+      <p *ngIf="mode === 'signup' && otpStep" class="otp-subtitle">
+        We sent a 6-digit verification code to <br/>
+        <strong>{{ email }}</strong>
+      </p>
+      <p *ngIf="mode === 'forgot' && !forgotOtpStep">
+        Enter your account email to receive a password reset code
+      </p>
+      <p *ngIf="mode === 'forgot' && forgotOtpStep" class="otp-subtitle">
+        Enter the 6-digit code sent to <br/>
+        <strong>{{ forgotEmail }}</strong>
       </p>
     </div>
 
-    <!-- LOGIN -->
+    <!-- 1. LOGIN FORM -->
     <form *ngIf="mode === 'login'" (ngSubmit)="submit()">
 
-      <input
-        type="email"
-        placeholder="📧 Email"
-        [(ngModel)]="loginEmail"
-        name="loginEmail"
-        required />
+      <div class="form-field">
+        <input
+          type="email"
+          placeholder="📧 Email Address"
+          [(ngModel)]="loginEmail"
+          name="loginEmail"
+          autocomplete="email"
+          required />
+      </div>
 
-      <div class="password-box">
+      <div class="form-field password-box">
         <input
           [type]="showPassword ? 'text' : 'password'"
           placeholder="🔒 Password"
           [(ngModel)]="loginPassword"
           name="loginPassword"
+          autocomplete="current-password"
           required />
-        <span (click)="showPassword = !showPassword">
+        <span (click)="showPassword = !showPassword" class="pwd-toggle">
           {{ showPassword ? '🙈' : '👁️' }}
         </span>
       </div>
 
-      <button type="submit" [disabled]="loading">
-        {{ loading ? 'Signing in...' : 'Sign In 🚀' }}
+      <div class="forgot-link-row">
+        <a class="forgot-password-link" (click)="toggleMode('forgot')">Forgot password?</a>
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn-submit">
+        <span *ngIf="loading">Signing In... ⏳</span>
+        <span *ngIf="!loading">Sign In 🚀</span>
       </button>
 
     </form>
 
-    <!-- SIGNUP -->
-    <form *ngIf="mode === 'signup'" (ngSubmit)="submit()">
+    <!-- 2. SIGNUP FORM (Step 1: Details) -->
+    <form *ngIf="mode === 'signup' && !otpStep" (ngSubmit)="submit()">
 
-      <div class="d-flex justify-content-around align-items-baseline gap-3">
+      <div class="name-emoji-row">
         <input
-        type="text"
-        placeholder="👤 Full Name"
-        [(ngModel)]="name"
-        name="name"
-        required />
-        <span class="fs-4" style="cursor: pointer;" (click)="changeEmoji()">{{ userEmoji }}</span>
+          type="text"
+          placeholder="👤 Full Name"
+          [(ngModel)]="name"
+          name="name"
+          autocomplete="name"
+          required />
+        <span class="user-emoji-btn" (click)="changeEmoji()" title="Click to change avatar emoji">{{ userEmoji }}</span>
       </div>
 
-      <input
-        type="email"
-        placeholder="📧 Email"
-        [(ngModel)]="email"
-        name="email"
-        required />
+      <div class="form-field">
+        <input
+          type="email"
+          placeholder="📧 Email Address"
+          [(ngModel)]="email"
+          name="email"
+          autocomplete="email"
+          required />
+      </div>
 
-      <div class="password-box">
+      <div class="form-field password-box">
         <input
           [type]="showPassword ? 'text' : 'password'"
-          placeholder="🔐 Password"
+          placeholder="🔐 Password (min 6 characters)"
           [(ngModel)]="password"
           name="password"
+          autocomplete="new-password"
           required />
-        <span (click)="showPassword = !showPassword">
+        <span (click)="showPassword = !showPassword" class="pwd-toggle">
           {{ showPassword ? '🙈' : '👁️' }}
         </span>
       </div>
 
-      <button type="submit" [disabled]="loading">
-        {{ loading ? 'Creating account...' : 'Sign Up ✨' }}
+      <button type="submit" [disabled]="loading" class="btn-submit">
+        <span *ngIf="loading">Sending Code... ✉️</span>
+        <span *ngIf="!loading">Continue & Send Code ✉️</span>
       </button>
 
     </form>
 
-    <!-- Footer -->
-    <div class="auth-footer">
-      <span>
-        {{ mode === 'login'
-          ? "Don't have an account?"
-          : 'Already have an account?' }}
+    <!-- 3. SIGNUP OTP VERIFICATION (Step 2: Enter 6-digit Code) -->
+    <div *ngIf="mode === 'signup' && otpStep" class="otp-verification-section">
+      
+      <div class="otp-input-group">
+        <label class="otp-field-label">Enter 6-Digit Code</label>
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="••••••"
+          [(ngModel)]="otpCode"
+          name="otpCode"
+          class="otp-digit-input"
+          autofocus
+          autocomplete="one-time-code"
+          (keyup.enter)="verifyAndCompleteSignup()"
+        />
+        <small class="hint-msg">Code valid for 10 minutes</small>
+      </div>
+
+      <button
+        type="button"
+        (click)="verifyAndCompleteSignup()"
+        [disabled]="loading || otpCode.length !== 6"
+        class="btn-submit btn-verify">
+        <span *ngIf="loading">Verifying Code... ⏳</span>
+        <span *ngIf="!loading">Verify & Create Account 🎉</span>
+      </button>
+
+      <div class="otp-actions-bar">
+        <button
+          type="button"
+          class="btn-resend"
+          [disabled]="resendCooldown > 0 || isResending"
+          (click)="resendOtpCode()">
+          <span *ngIf="resendCooldown > 0">Resend code in {{ resendCooldown }}s ⏳</span>
+          <span *ngIf="resendCooldown === 0">
+            <span *ngIf="isResending">Sending...</span>
+            <span *ngIf="!isResending">Resend Code 🔄</span>
+          </span>
+        </button>
+
+        <button type="button" class="btn-back" (click)="backToEdit()">
+          ← Edit Details
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 4. FORGOT PASSWORD FORM (Step 1: Request Code) -->
+    <form *ngIf="mode === 'forgot' && !forgotOtpStep" (ngSubmit)="requestForgotPasswordOtp()">
+
+      <div class="form-field">
+        <input
+          type="email"
+          placeholder="📧 Enter your account email"
+          [(ngModel)]="forgotEmail"
+          name="forgotEmail"
+          autocomplete="email"
+          required />
+      </div>
+
+      <button type="submit" [disabled]="loading" class="btn-submit">
+        <span *ngIf="loading">Sending Reset Code... ✉️</span>
+        <span *ngIf="!loading">Send Password Reset Code ✉️</span>
+      </button>
+
+      <div class="forgot-back-row">
+        <a class="btn-back-link" (click)="toggleMode('login')">← Back to Sign In</a>
+      </div>
+
+    </form>
+
+    <!-- 5. FORGOT PASSWORD FORM (Step 2: Enter Code & New Password) -->
+    <div *ngIf="mode === 'forgot' && forgotOtpStep" class="otp-verification-section">
+
+      <div class="otp-input-group">
+        <label class="otp-field-label">Enter 6-Digit Reset Code</label>
+        <input
+          type="text"
+          inputmode="numeric"
+          maxlength="6"
+          placeholder="••••••"
+          [(ngModel)]="resetOtpCode"
+          name="resetOtpCode"
+          class="otp-digit-input"
+          autofocus
+          autocomplete="one-time-code"
+        />
+        <small class="hint-msg">Code valid for 10 minutes</small>
+      </div>
+
+      <div class="form-field password-box">
+        <input
+          [type]="showNewPassword ? 'text' : 'password'"
+          placeholder="🔐 New Password (min 6 characters)"
+          [(ngModel)]="newPassword"
+          name="newPassword"
+          autocomplete="new-password"
+          required />
+        <span (click)="showNewPassword = !showNewPassword" class="pwd-toggle">
+          {{ showNewPassword ? '🙈' : '👁️' }}
+        </span>
+      </div>
+
+      <button
+        type="button"
+        (click)="submitResetPassword()"
+        [disabled]="loading || resetOtpCode.length !== 6 || newPassword.length < 6"
+        class="btn-submit btn-verify">
+        <span *ngIf="loading">Updating Password... ⏳</span>
+        <span *ngIf="!loading">Set New Password & Sign In ✨</span>
+      </button>
+
+      <div class="otp-actions-bar">
+        <button
+          type="button"
+          class="btn-resend"
+          [disabled]="forgotCooldown > 0 || isResending"
+          (click)="resendForgotOtp()">
+          <span *ngIf="forgotCooldown > 0">Resend code in {{ forgotCooldown }}s ⏳</span>
+          <span *ngIf="forgotCooldown === 0">
+            <span *ngIf="isResending">Sending...</span>
+            <span *ngIf="!isResending">Resend Code 🔄</span>
+          </span>
+        </button>
+
+        <button type="button" class="btn-back" (click)="backToForgotEmail()">
+          ← Edit Email
+        </button>
+      </div>
+
+    </div>
+
+    <!-- Footer Switch Mode -->
+    <div class="auth-footer" *ngIf="!otpStep && (!forgotOtpStep || mode !== 'forgot')">
+      <span *ngIf="mode === 'login'">
+        Don't have an account?
+        <b (click)="toggleMode('signup')">Sign Up</b>
       </span>
-      <b (click)="toggleMode()">
-        {{ mode === 'login' ? 'Sign Up' : 'Sign In' }}
-      </b>
+      <span *ngIf="mode === 'signup'">
+        Already have an account?
+        <b (click)="toggleMode('login')">Sign In</b>
+      </span>
+      <span *ngIf="mode === 'forgot'">
+        Remember your password?
+        <b (click)="toggleMode('login')">Sign In</b>
+      </span>
     </div>
 
   </div>
 
+  <app-modal></app-modal>
 </div>

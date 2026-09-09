@@ -1,0 +1,45 @@
+<div class="analytics-page">
+  <div class="header">
+    <h2>📊 Discipline Analytics & Insights</h2>
+    <p>Deep-dive into your habit consistency, completion velocity, and long-term milestones.</p>
+  </div>
+
+  @if (isLoading) {
+    <app-loader message="Analyzing your discipline metrics..." subMessage="Calculating completion velocity and consistency trends"></app-loader>
+  } @else {
+    <div class="stats-row">
+      <div class="stat-card">
+        <span class="stat-icon">🎯</span>
+        <div class="stat-details">
+          <span class="stat-label">Active Habits</span>
+          <span class="stat-num">{{ tasks.length }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-icon">⚡</span>
+        <div class="stat-details">
+          <span class="stat-label">Total Logged Wins</span>
+          <span class="stat-num">{{ totalCompletions }}</span>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <span class="stat-icon">🏆</span>
+        <div class="stat-details">
+          <span class="stat-label">Status</span>
+          <span class="stat-num text-success">Building Momentum</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="coming-soon-card">
+      <div class="coming-soon-content">
+        <span class="badge">🚀 Under Development</span>
+        <h3>Advanced Analytics & Habit Correlations</h3>
+        <p>Upcoming features include weekly trend charts, habit completion curves, monthly consistency breakdowns, and exportable PDF reports.</p>
+      </div>
+    </div>
+  }
+</div>
+

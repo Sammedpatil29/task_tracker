@@ -1,1 +1,259 @@
-<p>home works!</p>
+<div #exportArea class="task-tracker-container">
+  @if (isLoading) {
+    <app-loader message="Loading your discipline dashboard..." subMessage="Fetching habits, daily targets, and streak momentum"></app-loader>
+  } @else {
+    <div class="page-content">
+      
+      <!-- HERO HEADER -->
+      <div class="dashboard-header">
+        <div class="header-text">
+          <h1 class="page-title">🔥 Small habits. Massive momentum.</h1>
+          <p class="page-subtitle">Track consistency, build unshakeable discipline, and hit your weekly targets.</p>
+        </div>
+        <div class="header-actions">
+          @if (showWaterReminder) {
+            <div class="water-alert-pill" title="Take a moment and have some water" (click)="hydrationService.dismissReminder()">
+              <span>💧</span>
+            </div>
+          }
+          <button class="btn-primary-action" (click)="addTaskPrompt()">
+            <span>➕ Add New Habit</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- KPI METRICS GRID -->
+      <section class="kpi-grid">
+        <div class="kpi-card highlight">
+          <div class="kpi-header">
+            <span class="label">🎯 Discipline Score</span>
+          </div>
+          <div class="kpi-body">
+            <span class="value">{{ disciplineScore() }}</span>
+            <small class="unit">/ 100</small>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="label">📅 Today</span>
+          </div>
+          <div class="kpi-body">
+            <span class="value">{{ todayPercentage() }}%</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="label">🗓️ Weekly Avg</span>
+          </div>
+          <div class="kpi-body">
+            <span class="value">{{ weeklyPercentage() }}%</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="label">📆 Monthly Avg</span>
+          </div>
+          <div class="kpi-body">
+            <span class="value">{{ monthlyPercentage() }}%</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="label">💪 Strongest Habit</span>
+          </div>
+          <div class="kpi-body">
+            <span class="task-highlight">{{ strongestTask() ? '🔥 ' + strongestTask() : '—' }}</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="label">⚠️ Focus Habit</span>
+          </div>
+          <div class="kpi-body">
+            <span class="task-highlight">{{ weakestTask() ? '🧊 ' + weakestTask() : '—' }}</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="label">🔥 Current Streak</span>
+          </div>
+          <div class="kpi-body">
+            <span class="value">{{ currentStreak() }}</span>
+            <small class="unit">days</small>
+          </div>
+        </div>
+      </section>
+
+      <!-- HEATMAP SECTION CARD -->
+      <section class="dashboard-card heatmap-card">
+        <div class="section-header">
+          <div class="section-title-group">
+            <h2 class="section-title">Consistency Heatmap</h2>
+            <p class="section-subtitle">Visual representation of daily habit completions</p>
+          </div>
+
+          <!-- Heatmap Controls -->
+          <div class="heatmap-controls">
+            <div class="mode-toggle">
+              <button
+                [class.active]="viewMode === 'day'"
+                (click)="setViewMode('day')">1 Day</button>
+              <button
+                [class.active]="viewMode === 'week'"
+                (click)="setViewMode('week')">Last 7 Days</button>
+              <button
+                [class.active]="viewMode === 'month'"
+                (click)="setViewMode('month')">Last 30 Days</button>
+            </div>
+
+            <input 
+              class="date-picker-input"
+              type="date"
+              [max]="todayStr"
+              [(ngModel)]="selectedDate"
+              (change)="onViewDateChange()"
+            />
+          </div>
+        </div>
+
+        <!-- Heatmap Grid -->
+        <div class="heatmap"
+             [ngClass]="{
+               'heatmap-day-view': viewMode === 'day',
+               'heatmap-week-view': viewMode === 'week',
+               'heatmap-month-view': viewMode === 'month'
+             }">
+          <div
+            class="heatmap-cell"
+            *ngFor="let day of heatmapDays"
+            [title]="day.date + ' • ' + day.percent + '%'"
+            [ngClass]="getHeatClass(day.percent)">
+            <span class="heatmap-label">{{ day.label }}</span>
+            <span class="heatmap-val">{{ day.percent }}%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- HABITS TRACKING TABLE CARD -->
+      <section class="dashboard-card table-card">
+        <div class="section-header table-controls-header">
+          <div class="section-title-group">
+            <h2 class="section-title">Habit Log & Daily Matrix</h2>
+            <p class="section-subtitle">Check off your habits as you complete them throughout each day</p>
+          </div>
+
+          <!-- Date Filters & Actions -->
+          <div class="table-actions-bar">
+            <div class="date-range-group">
+              <div class="range-field">
+                <label>From</label>
+                <input
+                  type="date"
+                  [max]="todayStr"
+                  [(ngModel)]="fromDate"
+                  (change)="onDateChange()"
+                  class="date-picker-input"
+                />
+              </div>
+
+              <div class="range-field">
+                <label>To</label>
+                <input
+                  type="date"
+                  [max]="todayStr"
+                  [(ngModel)]="toDate"
+                  (change)="onDateChange()"
+                  class="date-picker-input"
+                />
+              </div>
+            </div>
+
+            <div class="action-buttons">
+              @if (isDataUpdating) {
+                <div class="syncing-badge">
+                  <span class="spinner-border spinner-border-sm me-1"></span>
+                  <span>Saving...</span>
+                </div>
+              }
+              <button class="btn-secondary-action" (click)="exportCSV()">
+                <span>📤 Export CSV</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- TABLE -->
+        @if (tracker.tasks && tracker.tasks.length > 0) {
+          <div class="table-container">
+            <table class="tracker-table">
+              <thead>
+                <tr>
+                  <th class="sticky-col task-col">📌 Habit / Target / Status</th>
+                  <th *ngFor="let d of dates"
+                      [class.today-col]="d === todayStr"
+                      class="date-col">
+                    <span *ngIf="d !== todayStr">{{ d | date:'dd MMM' }}</span>
+                    <span *ngIf="d === todayStr" class="today-tag">📍 Today</span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr *ngFor="let task of tracker.tasks"
+                    [class.task-disabled]="!task.enabled">
+                  
+                  <!-- Combined Task Column: Delete + Toggle + Name + Target -->
+                  <td class="sticky-col task-col task-name-cell">
+                    <button class="btn-delete-habit" (click)="deleteTask(task)" title="Delete Habit">
+                      🗑️
+                    </button>
+
+                    <label class="switch" [title]="task.enabled ? 'Disable habit' : 'Enable habit'">
+                      <input type="checkbox" [checked]="task.enabled" (change)="toggleTaskEnabled(task)">
+                      <span class="slider"></span>
+                    </label>
+
+                    <span class="task-title" [title]="task.name">{{ task.name | titlecase }}</span>
+
+                    <span class="frequency-pill" title="Weekly target">{{ task.weeklyTarget }}x/wk</span>
+                  </td>
+
+                  <!-- Daily Checkboxes -->
+                  <td *ngFor="let d of dates"
+                      [class.today-col]="d === todayStr"
+                      class="date-col">
+                    <input
+                      class="checkbox-custom"
+                      type="checkbox"
+                      [disabled]="!task.enabled"
+                      [checked]="tracker.isCompleted(task.id, d)"
+                      (change)="toggle(task, d)"
+                    />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        } @else {
+          <div class="add-task-empty" (click)="addTaskPrompt()">
+            <span class="empty-icon">➕</span>
+            <span class="empty-title">No habits tracked yet</span>
+            <span class="empty-desc">Click here to create your first discipline habit.</span>
+          </div>
+        }
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="dashboard-footer">
+        <p>&copy; {{ year }} Discipline Tracker. Built for peak consistency and daily momentum.</p>
+      </footer>
+
+    </div>
+  }
+</div>

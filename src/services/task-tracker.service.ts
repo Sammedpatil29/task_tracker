@@ -1,5 +1,6 @@
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { environment } from '../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class TaskTrackerService {
@@ -10,12 +11,12 @@ export class TaskTrackerService {
     { id: 3, name: 'Reading', weeklyTarget: 3, enabled: true }
   ];
 
-  url = 'https://task-tracker-backend-gb0d.onrender.com/';
+  url = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 
   // key = taskId_date
-  private store = new Map<string, boolean>();
+  store = new Map<string, boolean>();
 
   today() {
     return new Date();
@@ -34,12 +35,28 @@ export class TaskTrackerService {
     return this.store.get(this.key(taskId, date)) ?? false;
   }
 
+  setCompletion(taskId: number, date: string, completed: boolean) {
+    this.store.set(this.key(taskId, date), completed);
+  }
+
+  clearStore() {
+    this.store.clear();
+  }
+
   toggle(taskId: number, date: string) {
     const k = this.key(taskId, date);
     this.store.set(k, !this.store.get(k));
   }
 
-  registerUser(data: any) {
+  sendOtp(data: { name: string; email: string; password?: string }) {
+    return this.http.post(this.url + 'auth/send-otp', data);
+  }
+
+  resendOtp(data: { name?: string; email: string }) {
+    return this.http.post(this.url + 'auth/resend-otp', data);
+  }
+
+  registerUser(data: { name: string; email: string; password: string; emoji: string; otp: string }) {
     return this.http.post(this.url + 'auth/register', data);
   }
 
@@ -47,34 +64,67 @@ export class TaskTrackerService {
     return this.http.post(this.url + 'auth/login', data);
   }
 
+  forgotPassword(email: string) {
+    return this.http.post(this.url + 'auth/forgot-password', { email });
+  }
+
+  resetPassword(data: { email: string; otp: string; newPassword: string }) {
+    return this.http.post(this.url + 'auth/reset-password', data);
+  }
+
   getDashboard() {
-  // Get the token from wherever you stored it (usually localStorage)
-  const token = sessionStorage.getItem('trackJwt'); 
+    const token = sessionStorage.getItem('trackJwt'); 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.get(this.url + 'api/dashboard', { headers });
+  }
 
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`
-  });
+  updateProfile(data: { name?: string; emoji?: string }) {
+    const token = sessionStorage.getItem('trackJwt'); 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.put(this.url + 'api/user/profile', data, { headers });
+  }
 
-  return this.http.get(this.url + 'api/dashboard', { headers });
-}
+  updateHydrationSettings(data: { enabled?: boolean; soundEnabled?: boolean; intervalMinutes?: number }) {
+    const token = sessionStorage.getItem('trackJwt'); 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.put(this.url + 'api/user/hydration', data, { headers });
+  }
 
-addTask(data:any){
-  const token = sessionStorage.getItem('trackJwt'); 
-console.log(token)
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`
-  });
+  addTask(data: any) {
+    const token = sessionStorage.getItem('trackJwt'); 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.post(this.url + 'api/tasks', data, { headers });
+  }
 
-  return this.http.post(this.url + 'api/tasks', data, { headers },);
-}
+  toggleTaskStatus(taskId: number) {
+    const token = sessionStorage.getItem('trackJwt');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.patch(this.url + `api/tasks/${taskId}/toggle`, {}, { headers });
+  }
 
-completions(data:any){
-  const token = sessionStorage.getItem('trackJwt'); 
-console.log(token)
-  const headers = new HttpHeaders({
-    'Authorization': `Bearer ${token}`
-  });
+  deleteTask(taskId: number) {
+    const token = sessionStorage.getItem('trackJwt');
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.delete(this.url + `api/tasks/${taskId}`, { headers });
+  }
 
-  return this.http.post(this.url + 'api/completions', data, { headers },);
-}
+  completions(data: any) {
+    const token = sessionStorage.getItem('trackJwt'); 
+    const headers = new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+    return this.http.post(this.url + 'api/completions', data, { headers });
+  }
 }

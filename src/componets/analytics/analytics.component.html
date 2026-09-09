@@ -1,45 +1,717 @@
 <div class="analytics-page">
-  <div class="header">
-    <h2>📊 Discipline Analytics & Insights</h2>
-    <p>Deep-dive into your habit consistency, completion velocity, and long-term milestones.</p>
+  
+  <!-- TOP CONTROLS: TABS ON LEFT, DATE FILTER ON RIGHT -->
+  <div class="analytics-top-bar" *ngIf="!isLoading">
+    <!-- 3 FEATURE TABS -->
+    <div class="analytics-tabs-nav">
+      <button
+        type="button"
+        class="analytics-tab-btn"
+        [class.active]="activeTab === 'discipline'"
+        (click)="setActiveTab('discipline')">
+        <span class="tab-icon">📈</span>
+        <span class="tab-label">Discipline & Habits</span>
+      </button>
+      <button
+        type="button"
+        class="analytics-tab-btn"
+        [class.active]="activeTab === 'productivity'"
+        (click)="setActiveTab('productivity')">
+        <span class="tab-icon">⏱️</span>
+        <span class="tab-label">Productivity & Time</span>
+      </button>
+      <button
+        type="button"
+        class="analytics-tab-btn"
+        [class.active]="activeTab === 'diet'"
+        (click)="setActiveTab('diet')">
+        <span class="tab-icon">🥗</span>
+        <span class="tab-label">Diet & Nutrition</span>
+      </button>
+    </div>
+
+    <!-- DATE FILTERS & TRACKER LINKS (RIGHT SIDE) -->
+    <!-- When in Discipline Tab -->
+    <div class="analytics-top-actions" *ngIf="activeTab === 'discipline'">
+      <div class="time-range-picker">
+        <button
+          type="button"
+          class="range-btn"
+          [class.active]="timeRange === '7d'"
+          (click)="setTimeRange('7d')">
+          Last 7 Days
+        </button>
+        <button
+          type="button"
+          class="range-btn"
+          [class.active]="timeRange === '30d'"
+          (click)="setTimeRange('30d')">
+          Last 30 Days
+        </button>
+        <button
+          type="button"
+          class="range-btn"
+          [class.active]="timeRange === 'all'"
+          (click)="setTimeRange('all')">
+          All Time
+        </button>
+      </div>
+      <a routerLink="/home" class="btn-diet-link">Open Habits Tracker ➔</a>
+    </div>
+
+    <!-- When in Productivity Tab -->
+    <div class="analytics-top-actions" *ngIf="activeTab === 'productivity'">
+      <div class="time-range-picker">
+        <button type="button" class="range-btn" [class.active]="prodRange === '7d'" (click)="setProdRange('7d')">7 Days</button>
+        <button type="button" class="range-btn" [class.active]="prodRange === '14d'" (click)="setProdRange('14d')">14 Days</button>
+        <button type="button" class="range-btn" [class.active]="prodRange === '30d'" (click)="setProdRange('30d')">30 Days</button>
+      </div>
+      <!-- <a routerLink="/productivity" class="btn-diet-link">Open Productivity Tracker ➔</a> -->
+    </div>
+
+    <!-- When in Diet Tab -->
+    <div class="analytics-top-actions" *ngIf="activeTab === 'diet'">
+      <div class="time-range-picker">
+        <button type="button" class="range-btn" [class.active]="dietRange === '7d'" (click)="setDietRange('7d')">7 Days</button>
+        <button type="button" class="range-btn" [class.active]="dietRange === '14d'" (click)="setDietRange('14d')">14 Days</button>
+        <button type="button" class="range-btn" [class.active]="dietRange === '30d'" (click)="setDietRange('30d')">30 Days</button>
+      </div>
+      <!-- <a routerLink="/diet" class="btn-diet-link">Open Diet Tracker ➔</a> -->
+    </div>
   </div>
 
   @if (isLoading) {
-    <app-loader message="Analyzing your discipline metrics..." subMessage="Calculating completion velocity and consistency trends"></app-loader>
+    <app-loader message="Crunching your discipline analytics..." subMessage="Calculating completion velocity, streaks, and habit consistency"></app-loader>
   } @else {
-    <div class="stats-row">
-      <div class="stat-card">
-        <span class="stat-icon">🎯</span>
-        <div class="stat-details">
-          <span class="stat-label">Active Habits</span>
-          <span class="stat-num">{{ tasks.length }}</span>
+
+    <!-- ==================== TAB 1: DISCIPLINE & HABITS ==================== -->
+    <div class="analytics-tab-pane" *ngIf="activeTab === 'discipline'">
+
+    <!-- 1. KPI SUMMARY CARDS -->
+    <div class="kpi-grid">
+      <!-- Discipline Score -->
+      <div class="kpi-card card-glow-emerald">
+        <div class="kpi-icon-wrap bg-emerald">
+          <span class="kpi-icon">⚡</span>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Discipline Score</span>
+          <div class="kpi-val-row">
+            <span class="kpi-value">{{ overallScore }}%</span>
+            <span class="kpi-badge" [class.badge-high]="overallScore >= 70" [class.badge-med]="overallScore >= 40 && overallScore < 70" [class.badge-low]="overallScore < 40">
+              {{ overallScore >= 75 ? '🔥 High' : overallScore >= 45 ? '🟢 Steady' : '🌱 Starting' }}
+            </span>
+          </div>
+          <span class="kpi-subtext">Overall completion velocity</span>
         </div>
       </div>
 
-      <div class="stat-card">
-        <span class="stat-icon">⚡</span>
-        <div class="stat-details">
-          <span class="stat-label">Total Logged Wins</span>
-          <span class="stat-num">{{ totalCompletions }}</span>
+      <!-- Current & Best Streak -->
+      <div class="kpi-card card-glow-amber">
+        <div class="kpi-icon-wrap bg-amber">
+          <span class="kpi-icon">🔥</span>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Active Streak</span>
+          <div class="kpi-val-row">
+            <span class="kpi-value">{{ currentStreak }} <small>days</small></span>
+            <span class="kpi-badge badge-streak" title="Best historical streak">
+              🏆 Best: {{ longestStreak }}d
+            </span>
+          </div>
+          <span class="kpi-subtext">Consecutive days disciplined</span>
         </div>
       </div>
 
-      <div class="stat-card">
-        <span class="stat-icon">🏆</span>
-        <div class="stat-details">
-          <span class="stat-label">Status</span>
-          <span class="stat-num text-success">Building Momentum</span>
+      <!-- Total Wins Logged -->
+      <div class="kpi-card card-glow-blue">
+        <div class="kpi-icon-wrap bg-blue">
+          <span class="kpi-icon">🎯</span>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Logged Wins</span>
+          <div class="kpi-val-row">
+            <span class="kpi-value">{{ totalWins }}</span>
+            <span class="kpi-badge badge-blue">
+              {{ timeRange === '7d' ? '7 Days' : timeRange === '30d' ? '30 Days' : 'Lifetime' }}
+            </span>
+          </div>
+          <span class="kpi-subtext">Completed habit check-ins</span>
+        </div>
+      </div>
+
+      <!-- Target Adherence -->
+      <div class="kpi-card card-glow-purple">
+        <div class="kpi-icon-wrap bg-purple">
+          <span class="kpi-icon">🏆</span>
+        </div>
+        <div class="kpi-body">
+          <span class="kpi-label">Target Adherence</span>
+          <div class="kpi-val-row">
+            <span class="kpi-value">{{ targetAdherencePct }}%</span>
+            <span class="kpi-badge badge-purple">
+              {{ habitStats.length }} Habits Active
+            </span>
+          </div>
+          <span class="kpi-subtext">Habits meeting weekly goals</span>
         </div>
       </div>
     </div>
 
-    <div class="coming-soon-card">
-      <div class="coming-soon-content">
-        <span class="badge">🚀 Under Development</span>
-        <h3>Advanced Analytics & Habit Correlations</h3>
-        <p>Upcoming features include weekly trend charts, habit completion curves, monthly consistency breakdowns, and exportable PDF reports.</p>
+    <!-- 2. MAIN VISUAL CHARTS SECTION -->
+    <div class="charts-row">
+      
+      <!-- Daily Completion Velocity Bar Chart -->
+      <div class="analytics-card chart-card">
+        <div class="card-header-row">
+          <div>
+            <h3>📈 Daily Completion Velocity</h3>
+            <span class="card-caption">Day-by-day habit completions vs daily capacity</span>
+          </div>
+          <span class="chart-tag">{{ timeRange === '7d' ? 'Weekly Flow' : timeRange === '30d' ? '30-Day Trend' : 'Recent Trend' }}</span>
+        </div>
+
+        <div class="bar-chart-container">
+          <div class="chart-bars-wrap">
+            <div
+              *ngFor="let day of trendDays"
+              class="bar-column"
+              [class.is-today]="day.isToday">
+              
+              <!-- Hover Tooltip -->
+              <div class="bar-tooltip">
+                <strong>{{ day.label }}</strong>
+                <span>{{ day.completedCount }} of {{ day.totalActiveTasks }} completed ({{ day.percentage }}%)</span>
+              </div>
+
+              <div class="bar-value-label" *ngIf="day.completedCount > 0">{{ day.completedCount }}</div>
+
+              <div class="bar-track">
+                <div
+                  class="bar-fill"
+                  [style.height.%]="day.heightPct"
+                  [class.bar-full]="day.percentage === 100"
+                  [class.bar-empty]="day.completedCount === 0">
+                </div>
+              </div>
+
+              <span class="bar-day-name">{{ day.shortDay }}</span>
+              <span class="bar-date-label">{{ day.label.split(' ')[0] }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-legend">
+          <span class="legend-item"><span class="legend-dot dot-active"></span> Completed Habits</span>
+          <span class="legend-item"><span class="legend-dot dot-today"></span> Current Day</span>
+          <span class="legend-item"><span class="legend-dot dot-full"></span> 100% Perfect Day</span>
+        </div>
+      </div>
+
+      <!-- Right Column: 28-Day Consistency Heatmap & Peak Day Insights -->
+      <div class="side-insights-col">
+        
+        <!-- Consistency Matrix Heatmap -->
+        <div class="analytics-card heatmap-card">
+          <div class="card-header-row">
+            <div>
+              <h3>🗓️ Consistency Matrix</h3>
+              <span class="card-caption">4-week discipline density heatmap</span>
+            </div>
+          </div>
+
+          <div class="heatmap-grid">
+            <div
+              *ngFor="let cell of heatmapCells"
+              class="heatmap-cell"
+              [attr.data-level]="cell.intensity"
+              [class.cell-today]="cell.isToday"
+              [title]="cell.formattedDate + ': ' + cell.count + ' habit(s) completed'">
+            </div>
+          </div>
+
+          <div class="heatmap-legend">
+            <span class="legend-text">Less</span>
+            <div class="legend-scale">
+              <span class="scale-dot lvl-0"></span>
+              <span class="scale-dot lvl-1"></span>
+              <span class="scale-dot lvl-2"></span>
+              <span class="scale-dot lvl-3"></span>
+              <span class="scale-dot lvl-4"></span>
+            </div>
+            <span class="legend-text">More</span>
+          </div>
+        </div>
+
+        <!-- Behavioral Performance Insight -->
+        <div class="analytics-card insight-card">
+          <div class="insight-header">
+            <span class="insight-icon">💡</span>
+            <h4>Discipline Rhythm Insight</h4>
+          </div>
+          <p class="insight-body">
+            You are strongest on <strong class="text-accent">{{ bestDay.name }}s</strong> ({{ bestDay.rate }}% consistency). Plan ahead for <strong class="text-warning">{{ challengingDay.name }}s</strong> to keep your unbroken momentum!
+          </p>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 3. PER-HABIT CONSISTENCY BREAKDOWN -->
+    <div class="section-container">
+      <div class="section-header">
+        <div>
+          <h3>🎯 Individual Habit Consistency</h3>
+          <p class="section-caption">Pace, completion rates, and active streaks for every discipline track</p>
+        </div>
+      </div>
+
+      <div class="habits-stat-grid">
+        <div *ngFor="let habit of habitStats" class="habit-stat-card">
+          <div class="habit-stat-header">
+            <div class="habit-title-box">
+              <span class="habit-emoji-badge">{{ habit.emoji }}</span>
+              <div>
+                <h4 class="habit-name">{{ habit.name }}</h4>
+                <span class="habit-target-tag">Target: {{ habit.weeklyTarget }}x / week</span>
+              </div>
+            </div>
+
+            <span
+              class="habit-status-pill"
+              [class.status-mastered]="habit.status === 'target_met'"
+              [class.status-ontrack]="habit.status === 'on_track'"
+              [class.status-behind]="habit.status === 'behind'">
+              {{ habit.status === 'target_met' ? '🎯 Target Mastered' : habit.status === 'on_track' ? '🟢 On Track' : '🟡 Needs Boost' }}
+            </span>
+          </div>
+
+          <div class="habit-progress-section">
+            <div class="progress-labels">
+              <span class="progress-rate-text">{{ habit.completionRate }}% Adherence</span>
+              <span class="progress-count-text">{{ habit.periodCompletions }} / {{ habit.targetExpected }} checks</span>
+            </div>
+
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="habit.completionRate"
+                [class.fill-mastered]="habit.status === 'target_met'"
+                [class.fill-ontrack]="habit.status === 'on_track'"
+                [class.fill-behind]="habit.status === 'behind'">
+              </div>
+            </div>
+          </div>
+
+          <div class="habit-footer-row">
+            <span class="habit-streak-badge">
+              🔥 {{ habit.streak }} day streak
+            </span>
+            <span class="habit-weekly-ratio">
+              {{ habit.periodCompletions }} wins in selected period
+            </span>
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- 4. GAMIFICATION & MILESTONE ACHIEVEMENTS -->
+    <div class="section-container">
+      <div class="section-header">
+        <div>
+          <h3>🏆 Milestones & Discipline Badges</h3>
+          <p class="section-caption">Unlock badges as you build consistency and elevate your daily performance</p>
+        </div>
+      </div>
+
+      <div class="milestones-grid">
+        <div
+          *ngFor="let m of milestones"
+          class="milestone-card"
+          [class.milestone-unlocked]="m.unlocked"
+          [class.milestone-locked]="!m.unlocked">
+          
+          <div class="milestone-badge-icon">
+            <span class="badge-emoji">{{ m.icon }}</span>
+          </div>
+
+          <div class="milestone-info">
+            <div class="milestone-title-row">
+              <span class="milestone-title">{{ m.title }}</span>
+              <span class="milestone-tag" [class.tag-unlocked]="m.unlocked">{{ m.category }}</span>
+            </div>
+            <p class="milestone-desc">{{ m.description }}</p>
+            <div class="milestone-status-bar">
+              <span class="milestone-status-text" [class.unlocked-text]="m.unlocked">
+                {{ m.progressText }}
+              </span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    </div> <!-- CLOSE TAB 1 (DISCIPLINE) -->
+
+    <!-- ==================== TAB 2: PRODUCTIVITY & TIME ==================== -->
+    <div class="analytics-tab-pane" *ngIf="activeTab === 'productivity'">
+
+    <!-- 6. INLINE 24H PRODUCTIVITY GOAL vs ACTUAL GRAPH -->
+    <div class="analytics-card prod-compare-card" *ngIf="productivityCategories.length > 0">
+      <div class="prod-compare-header">
+        <div class="prod-compare-title-group">
+          <h3>⏱️ 24-Hour Goal vs Daily Breakdown</h3>
+          <p class="card-subtitle">Parallel view comparing your target budget against logged hours per category</p>
+        </div>
+        <div class="diet-header-right-actions">
+          <!-- <div class="prod-range-pills">
+            <button type="button" class="prod-range-btn" [class.active]="prodRange === '7d'" (click)="setProdRange('7d')">7 Days</button>
+            <button type="button" class="prod-range-btn" [class.active]="prodRange === '14d'" (click)="setProdRange('14d')">14 Days</button>
+            <button type="button" class="prod-range-btn" [class.active]="prodRange === '30d'" (click)="setProdRange('30d')">30 Days</button>
+          </div> -->
+          <a routerLink="/productivity" class="btn-diet-link">Open Productivity Tracker ➔</a>
+        </div>
+      </div>
+
+      <!-- Quick Productivity Metrics Strip -->
+      <div class="diet-analytics-metrics prod-metrics-strip">
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Daily Avg Tracked</span>
+          <div class="d-metric-val">
+            <strong>{{ prodAvgDailyHours }}h</strong> <small>/ {{ totalTargetHours }}h</small>
+          </div>
+          <span class="d-metric-sub">
+            🎯 {{ prodCoveragePct }}% 24h budget logged
+          </span>
+        </div>
+
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Focus & Deep Work</span>
+          <div class="d-metric-val">
+            <strong>{{ prodFocusDailyHours }}h</strong> <small>/ day avg</small>
+          </div>
+          <span class="d-metric-sub">
+            💼 Work & productivity time
+          </span>
+        </div>
+
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Sleep & Recovery</span>
+          <div class="d-metric-val">
+            <strong>{{ prodSleepDailyHours }}h</strong> <small>/ day avg</small>
+          </div>
+          <span class="d-metric-sub">
+            😴 Rest & recovery rate
+          </span>
+        </div>
+
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Budget Adherence</span>
+          <div class="d-metric-val">
+            <strong>{{ prodAdherencePct }}%</strong> <small>balanced</small>
+          </div>
+          <span class="d-metric-sub">
+            ⚡ Category goals met
+          </span>
+        </div>
+      </div>
+
+      <!-- Graph Stage -->
+      <div class="prod-compare-stage">
+
+        <!-- Fixed Left: Target Goal Candle -->
+        <div class="prod-goal-col">
+          <div class="prod-col-head">
+            <span class="prod-badge-goal">🎯 Target</span>
+            <span class="prod-col-sub">{{ totalTargetHours }}h Budget</span>
+          </div>
+          <div class="prod-bar-track">
+            <div
+              *ngFor="let cat of productivityCategories"
+              class="prod-goal-seg"
+              [style.flex]="(cat.targetHours || 0.1) + ' 1 0px'"
+              [style.height.%]="getGoalSegmentHeight(cat)"
+              [style.background-color]="cat.color">
+              <div class="prod-seg-tooltip">
+                <strong>Target Allocation</strong>
+                <span>{{ cat.emoji }} {{ cat.name }}: <strong>{{ cat.targetHours }}h</strong></span>
+                <small>{{ ((cat.targetHours || 0) / (totalTargetHours || 24)) * 100 | number:'1.0-1' }}% of budget</small>
+              </div>
+            </div>
+          </div>
+          <div class="prod-col-foot"><strong>Target</strong></div>
+        </div>
+
+        <!-- Right: Scrollable Daily Bars -->
+        <div class="prod-compare-scroll">
+          <div class="prod-days-track">
+
+            <div *ngFor="let day of compareDays" class="prod-day-col" [class.prod-today-col]="day.isToday">
+              <div class="prod-col-head">
+                <span class="prod-day-label" [class.prod-today-label]="day.isToday">{{ day.dayLabel }}</span>
+                <span class="prod-hours-badge" [class.prod-full-badge]="day.totalLoggedHours >= (totalTargetHours - 0.5)">
+                  {{ day.totalLoggedHours }}h / {{ totalTargetHours }}h
+                </span>
+              </div>
+
+              <div class="prod-bar-track prod-actual-track">
+                <div
+                  *ngFor="let seg of day.segments"
+                  class="prod-parallel-slot"
+                  [style.flex]="(seg.targetHours || 0.1) + ' 1 0px'"
+                  [style.height.%]="seg.slotHeightPct"
+                  [class.prod-slot-overflow]="seg.isOverTarget">
+
+                  <div class="prod-slot-empty-bg" [style.background-color]="seg.color + '18'"></div>
+                  <div class="prod-slot-fill" [style.height.%]="seg.fillPct" [style.background-color]="seg.color"></div>
+
+                  <div *ngIf="seg.isOverTarget" class="prod-overflow-tag">+{{ seg.overflowHours }}h ⚠️</div>
+
+                  <div class="prod-slot-label" *ngIf="(seg.targetHours || 0) >= 1.2">
+                    <span *ngIf="seg.loggedHours > 0">{{ seg.loggedHours }}h</span>
+                    <span class="prod-slot-empty-mark" *ngIf="seg.loggedHours === 0">-</span>
+                  </div>
+                  <div class="prod-slot-label prod-slot-label-tiny" *ngIf="(seg.targetHours || 0) < 1.2 && (seg.targetHours || 0) >= 0.7">
+                    <span *ngIf="seg.loggedHours > 0">{{ seg.loggedHours }}</span>
+                  </div>
+
+                  <!-- Floating tooltip above slot -->
+                  <div class="prod-seg-tooltip prod-slot-tooltip">
+                    <strong>{{ day.formattedDate }}</strong>
+                    <span>{{ seg.emoji }} {{ seg.name }}: <strong>{{ seg.loggedHours }}h</strong> / {{ seg.targetHours }}h</span>
+                    <small *ngIf="seg.isOverTarget" style="color:#f87171">⚠️ Over by +{{ seg.overflowHours }}h</small>
+                    <small *ngIf="!seg.isOverTarget && seg.loggedHours > 0">{{ seg.fillPct }}% of goal</small>
+                    <small *ngIf="seg.loggedHours === 0">0h logged</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="prod-col-foot">
+                <span>{{ day.shortDate || (day.formattedDate.split(',')[1] || day.formattedDate) }}</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Legend -->
+      <div class="prod-legend">
+        <span class="prod-legend-title">Categories:</span>
+        <div class="prod-legend-items">
+          <div *ngFor="let cat of productivityCategories" class="prod-legend-item">
+            <span class="prod-legend-dot" [style.background-color]="cat.color"></span>
+            <span>{{ cat.emoji }} {{ cat.name }} ({{ cat.targetHours }}h)</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BEHAVIORAL TIME INSIGHTS -->
+    <div class="analytics-card behavioral-insights-card" *ngIf="productivityCategories.length > 0">
+      <div class="card-header-clean">
+        <span class="card-tag">⚡ TIME RHYTHM</span>
+        <h3>Behavioral Productivity Insights</h3>
+        <p class="card-subtitle">Patterns and balance detected across your logged time blocks</p>
+      </div>
+      <div class="insights-row">
+        <div class="insight-item highlight-insight">
+          <span class="insight-icon">🚀</span>
+          <div class="insight-content">
+            <span class="insight-label">Peak Focus Velocity</span>
+            <strong>{{ prodPeakDay.name }}</strong>
+            <p>{{ prodPeakDay.hours }}h logged focus — your highest momentum day during this period.</p>
+          </div>
+        </div>
+
+        <div class="insight-item">
+          <span class="insight-icon">🏆</span>
+          <div class="insight-content">
+            <span class="insight-label">Top Category Investment</span>
+            <strong>{{ prodTopCategory.emoji }} {{ prodTopCategory.name }}</strong>
+            <p>{{ prodTopCategory.totalHours }}h total logged across the selected {{ prodRange === '7d' ? '7 days' : prodRange === '14d' ? '14 days' : '30 days' }}.</p>
+          </div>
+        </div>
+
+        <div class="insight-item">
+          <span class="insight-icon">⏳</span>
+          <div class="insight-content">
+            <span class="insight-label">Time Leak Opportunity</span>
+            <strong>{{ prodTimeLeakDailyHours }}h / day unlogged</strong>
+            <p>{{ prodTimeLeakDailyHours > 0 ? 'Unallocated time available to capture for structured routines or rest.' : '100% of your 24-hour daily budget is actively tracked.' }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CATEGORY ALLOCATION & ADHERENCE BREAKDOWN -->
+    <div class="analytics-card" *ngIf="productivityCategories.length > 0">
+      <div class="card-header-clean">
+        <span class="card-tag">📊 TARGET BREAKDOWN</span>
+        <h3>Category Allocation & Adherence</h3>
+        <p class="card-subtitle">Daily average logged hours compared to your 24-hour target budget</p>
+      </div>
+      <div class="habit-cards-grid">
+        <div *ngFor="let stat of prodCategoryStats" class="habit-card">
+          <div class="habit-card-top">
+            <div class="habit-info">
+              <span class="habit-emoji">{{ stat.emoji }}</span>
+              <div>
+                <h4 class="habit-name">{{ stat.name }}</h4>
+                <span class="habit-target-hint">Target: {{ stat.targetHours }}h / day</span>
+              </div>
+            </div>
+            <span class="habit-status-badge" [class.badge-mastered]="stat.status === 'mastered'" [class.badge-over]="stat.status === 'over'" [class.badge-ontrack]="stat.status === 'on_track'" [class.badge-behind]="stat.status === 'behind'">
+              {{ stat.statusLabel }}
+            </span>
+          </div>
+          <div class="habit-card-mid">
+            <div class="habit-stat-val">
+              <strong>{{ stat.avgDailyHours }}h</strong> <small>/ day avg</small>
+            </div>
+            <div class="habit-rate-pct">{{ stat.adherencePct }}%</div>
+          </div>
+          <div class="habit-progress-track">
+            <div class="habit-progress-fill" [style.width.%]="stat.fillPct" [style.background-color]="stat.color"></div>
+          </div>
+          <div class="habit-card-bot">
+            <span>Total: {{ stat.totalLoggedHours }}h logged</span>
+            <span *ngIf="stat.diffHours !== 0" [style.color]="stat.diffHours > 0 ? '#f59e0b' : '#10b981'">
+              {{ stat.diffHours > 0 ? ('+' + stat.diffHours + 'h over') : (stat.diffHours + 'h under') }}
+            </span>
+            <span *ngIf="stat.diffHours === 0" style="color: #10b981;">Perfect match</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty State if no categories -->
+    <div class="analytics-card empty-tab-card" *ngIf="productivityCategories.length === 0">
+      <div class="empty-tab-icon">⏱️</div>
+      <h3>No Productivity Goals Configured Yet</h3>
+      <p>Allocate your 24-hour daily budget across categories to visualize time discipline.</p>
+      <a routerLink="/productivity" class="btn-tab-cta">Open Productivity Tracker ➔</a>
+    </div>
+
+    </div> <!-- CLOSE TAB 2 (PRODUCTIVITY) -->
+
+    <!-- ==================== TAB 3: DIET & NUTRITION ==================== -->
+    <div class="analytics-tab-pane" *ngIf="activeTab === 'diet'">
+
+    <!-- 7. DAILY NUTRITION & CALORIES TRACK CARD -->
+    <div class="analytics-card diet-analytics-card">
+      <div class="prod-compare-header">
+        <div class="prod-compare-title-group">
+          <h3>🥗 Nutrition & Calorie Tracking</h3>
+          <p class="card-subtitle">Monitor daily calorie intake, adherence to your budget, and macro distribution</p>
+        </div>
+        <div class="diet-header-right-actions">
+          <!-- <div class="prod-range-pills">
+            <button type="button" class="prod-range-btn" [class.active]="dietRange === '7d'" (click)="setDietRange('7d')">7 Days</button>
+            <button type="button" class="prod-range-btn" [class.active]="dietRange === '14d'" (click)="setDietRange('14d')">14 Days</button>
+            <button type="button" class="prod-range-btn" [class.active]="dietRange === '30d'" (click)="setDietRange('30d')">30 Days</button>
+          </div> -->
+          <a routerLink="/diet" class="btn-diet-link">Open Diet Tracker ➔</a>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Strip -->
+      <div class="diet-analytics-metrics">
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Today's Intake</span>
+          <div class="d-metric-val">
+            <strong>{{ todayCalories | number:'1.0-0' }}</strong> <small>/ {{ dietGoal?.dailyCalories || 2000 }} kcal</small>
+          </div>
+          <span class="d-metric-sub" [class.sub-over]="todayCalories > (dietGoal?.dailyCalories || 2000)">
+            {{ todayCalories > (dietGoal?.dailyCalories || 2000) ? ('⚠️ +' + (todayCalories - (dietGoal?.dailyCalories || 2000)) + ' kcal over') : ((dietGoal?.dailyCalories || 2000) - todayCalories + ' kcal left') }}
+          </span>
+        </div>
+
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Daily Average</span>
+          <div class="d-metric-val">
+            <strong>{{ avgDailyCalories | number:'1.0-0' }}</strong> <small>kcal/day</small>
+          </div>
+          <span class="d-metric-sub">Across {{ dietRange }}</span>
+        </div>
+
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Target Adherence</span>
+          <div class="d-metric-val">
+            <strong>{{ dietAdherencePct }}%</strong>
+          </div>
+          <span class="d-metric-sub">Days on or near budget</span>
+        </div>
+
+        <div class="diet-metric-box">
+          <span class="d-metric-label">Today's Macros</span>
+          <div class="d-metric-macros">
+            <span class="m-tag m-p">P: {{ todayDietSummary.proteinG }}g</span>
+            <span class="m-tag m-c">C: {{ todayDietSummary.carbsG }}g</span>
+            <span class="m-tag m-f">F: {{ todayDietSummary.fatG }}g</span>
+          </div>
+          <span class="d-metric-sub">Goal: {{ dietGoal?.proteinG || 150 }}g P / {{ dietGoal?.carbsG || 200 }}g C</span>
+        </div>
+      </div>
+
+      <!-- Visual Calorie Bar Chart -->
+      <div class="diet-chart-stage">
+        <!-- Target Line Indicator -->
+        <div class="diet-chart-target-badge">
+          <span>🎯 Daily Target: {{ dietGoal?.dailyCalories || 2000 }} kcal</span>
+        </div>
+
+        <div class="diet-chart-scroll">
+          <div class="diet-days-track">
+            <div *ngFor="let day of dietDays" class="diet-day-col" [class.diet-today-col]="day.isToday">
+              <div class="diet-col-head">
+                <span class="diet-day-label" [class.diet-today-label]="day.isToday">{{ day.dayLabel }}</span>
+                <span class="diet-kcal-badge" [class.badge-over]="day.isOver" [class.badge-met]="day.isMet">
+                  {{ day.calories }} kcal
+                </span>
+              </div>
+
+              <!-- Bar Track -->
+              <div class="diet-bar-track">
+                <!-- Target Budget Line -->
+                <div class="diet-target-line" [style.bottom.%]="day.targetLinePct" title="Target: {{ day.targetCalories }} kcal"></div>
+
+                <!-- Fill Bar -->
+                <div
+                  class="diet-bar-fill"
+                  [style.height.%]="day.fillHeightPct"
+                  [class.fill-over]="day.isOver"
+                  [class.fill-empty]="day.calories === 0">
+                </div>
+
+                <!-- Hover Tooltip -->
+                <div class="diet-tooltip" [class.tooltip-over]="day.isOver">
+                  <strong>{{ day.formattedDate }}</strong>
+                  <span>🔥 Calories: <strong>{{ day.calories }}</strong> / {{ day.targetCalories }} kcal</span>
+                  <div class="tooltip-macros">
+                    <span>🟢 P: {{ day.proteinG }}g</span>
+                    <span>🔵 C: {{ day.carbsG }}g</span>
+                    <span>🔴 F: {{ day.fatG }}g</span>
+                  </div>
+                  <small *ngIf="day.isOver" class="tooltip-over-tag">⚠️ Over budget by +{{ day.calories - day.targetCalories }} kcal</small>
+                  <small *ngIf="!day.isOver && day.calories > 0">{{ day.pctOfTarget }}% of daily budget</small>
+                  <small *ngIf="day.calories === 0">0 kcal logged</small>
+                </div>
+              </div>
+
+              <div class="diet-col-foot">
+                <span>{{ day.shortDate }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    </div> <!-- CLOSE TAB 3 (DIET) -->
+
   }
 </div>
-

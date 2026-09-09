@@ -43,7 +43,7 @@ export const loginGuard: CanActivateFn = (route, state) => {
     try {
       const payload = JSON.parse(atob(token.split('.')[1]));
       if (!payload.exp || payload.exp * 1000 > Date.now()) {
-        router.navigate(['/home']);
+        router.navigate(['/analytics']);
         return false;
       }
     } catch {

@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TaskTrackerService } from '../../services/task-tracker.service';
 import { ModalService } from '../../services/modal.service';
 import { HydrationService } from '../../services/hydration.service';
@@ -9,7 +9,7 @@ import { LoaderComponent } from '../loader/loader.component';
 
 @Component({
   selector: 'app-home',
-  imports: [FormsModule, CommonModule, LoaderComponent],
+  imports: [FormsModule, CommonModule, LoaderComponent, RouterModule],
   templateUrl: './home.component.html',
   styleUrl: './home.component.css'
 })

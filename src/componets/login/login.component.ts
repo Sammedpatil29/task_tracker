@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TaskTrackerService } from '../../services/task-tracker.service';
 import { ModalService } from '../../services/modal.service';
+import { ThemeService } from '../../services/theme.service';
 import { ModalComponent } from '../modal/modal.component';
 
 @Component({
@@ -60,7 +61,8 @@ export class LoginComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     private taskTrackerService: TaskTrackerService,
-    private modalService: ModalService
+    private modalService: ModalService,
+    private themeService: ThemeService
   ) {}
 
   ngOnInit() {
@@ -147,9 +149,10 @@ export class LoginComponent implements OnInit, OnDestroy {
       this.taskTrackerService.loginUser(loginData).subscribe({
         next: (response: any) => {
           sessionStorage.setItem('trackJwt', response['token']);
+          sessionStorage.setItem('justLoggedIn', 'true');
           this.isLoggedIn.emit(true);
           this.loading = false;
-          this.router.navigate(['/home']);
+          this.router.navigate(['/analytics']);
         },
         error: (err: any) => {
           this.loading = false;
@@ -228,9 +231,10 @@ export class LoginComponent implements OnInit, OnDestroy {
     this.taskTrackerService.registerUser(signupData).subscribe({
       next: (response: any) => {
         sessionStorage.setItem('trackJwt', response['token']);
+        sessionStorage.setItem('justLoggedIn', 'true');
         this.isLoggedIn.emit(true);
         this.loading = false;
-        this.router.navigate(['/home']);
+        this.router.navigate(['/analytics']);
       },
       error: (err: any) => {
         this.loading = false;

@@ -16,6 +16,9 @@
               <span>💧</span>
             </div>
           }
+          <a routerLink="/analytics" [queryParams]="{ tab: 'discipline' }" class="btn-analytics-link" title="View Discipline & Momentum Analytics">
+            📊 View Analytics ➔
+          </a>
           <button class="btn-primary-action" (click)="addTaskPrompt()">
             <span>➕ Add New Habit</span>
           </button>

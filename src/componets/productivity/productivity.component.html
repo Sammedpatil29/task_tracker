@@ -1,0 +1,579 @@
+<div class="productivity-page">
+  
+  <!-- TOP HEADER -->
+  <div class="header-container">
+    <div class="header-text">
+      <h2>⏱️ Productivity & Time Tracker</h2>
+      <p>Log your daily activities, eliminate time leaks, and align your schedule with your 24-hour goal allocation.</p>
+    </div>
+
+    <!-- Header Actions (Date Navigator & Edit Goals Button) -->
+    <div class="header-actions">
+      <!-- Date Switcher -->
+      <div class="date-navigator">
+        <button type="button" class="date-nav-btn" (click)="navigateDate(-1)" title="Previous Day">‹</button>
+        <span class="current-date-pill" [class.is-today-pill]="isToday()">
+          {{ selectedDateFormatted }}
+        </span>
+        <button type="button" class="date-nav-btn" (click)="navigateDate(1)" title="Next Day">›</button>
+        <button type="button" class="btn-today" *ngIf="!isToday()" (click)="setToday()">Today</button>
+      </div>
+
+      <!-- Compare Button -->
+      <a routerLink="/analytics" [queryParams]="{ tab: 'productivity' }" class="btn-compare" title="Compare 24h Target Goal vs Actual Daily Schedule in Analytics">
+        📊 View Analytics ➔
+      </a>
+
+      <!-- Edit Categories Button -->
+      <button type="button" class="btn-edit-categories" (click)="openCategoryModal()">
+        ⚙️ Edit Categories & Goals
+      </button>
+    </div>
+  </div>
+
+  @if (isLoading) {
+    <app-loader message="Loading your productivity time logs..." subMessage="Calculating daily category breakdown and schedules"></app-loader>
+  } @else {
+
+    <!-- 1. 24-HOUR DAILY ALLOCATION METER -->
+    <div class="day-meter-card">
+      <div class="day-meter-header">
+        <div class="meter-info">
+          <span class="meter-label">Daily 24-Hour Allocation</span>
+          <span class="meter-val">
+            <strong>{{ totalLoggedHoursFormatted }}</strong>
+            <small>/ 24h Logged</small>
+          </span>
+        </div>
+
+        <div class="meter-stat-pills">
+          <span class="meter-pill pill-logged">✅ {{ totalLoggedHours }}h Logged</span>
+          <span class="meter-pill pill-remaining">⏳ {{ remainingHours }}h Remaining</span>
+          <span class="meter-pill pill-target">🎯 24.0h Budget</span>
+        </div>
+      </div>
+
+      <!-- Segmented Multi-Color Progress Bar -->
+      <div class="segmented-progress-track">
+        <div
+          *ngFor="let sum of categorySummaries"
+          class="segmented-fill"
+          [style.width.%]="(sum.loggedHours / 24) * 100"
+          [style.background-color]="sum.category.color"
+          [title]="sum.category.name + ': ' + sum.loggedHours + 'h logged'">
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. MAIN WORKSPACE (Activity Logger + Timeline + Category Targets) -->
+    <div class="workspace-grid">
+      
+      <!-- LEFT COLUMN: Activity Input & Chronological Timeline -->
+      <div class="timeline-column">
+        
+        <!-- QUICK ACTIVITY LOGGER CARD -->
+        <div class="card log-input-card">
+          <div class="card-title-row">
+            <h3>✍️ Log Time Block</h3>
+            <span class="overlap-shield-tag" title="Strict non-overlapping time protected">🛡️ Overlap Protected</span>
+          </div>
+
+          <form (ngSubmit)="addActivityLog()" class="log-form">
+            
+            <div class="form-row-main">
+              <!-- Activity Description -->
+              <div class="input-group input-flex-2">
+                <label>Activity Description</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Morning Workout, Deep Work Sprint, Breakfast"
+                  [(ngModel)]="logTitle"
+                  name="logTitle"
+                  required
+                />
+              </div>
+
+              <!-- Category Dropdown -->
+              <div class="input-group input-flex-1">
+                <label>Category</label>
+                <select [(ngModel)]="logCategoryId" name="logCategoryId" required>
+                  <option *ngFor="let cat of categories" [ngValue]="cat.id">
+                    {{ cat.emoji }} {{ cat.name }}
+                  </option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-row-secondary">
+              <!-- Start Time -->
+              <div class="input-group">
+                <label>Start Time</label>
+                <input
+                  type="time"
+                  [(ngModel)]="logStartTime"
+                  name="logStartTime"
+                  required
+                />
+              </div>
+
+              <!-- End Time -->
+              <div class="input-group">
+                <label>End Time</label>
+                <input
+                  type="time"
+                  [(ngModel)]="logEndTime"
+                  name="logEndTime"
+                  required
+                />
+              </div>
+
+              <!-- Submit Button -->
+              <div class="input-group btn-group-align">
+                <button
+                  type="submit"
+                  class="btn-add-log"
+                  [disabled]="isSavingLog || !logTitle.trim()">
+                  <span *ngIf="isSavingLog">Saving... ⏳</span>
+                  <span *ngIf="!isSavingLog">+ Add Log ⏱️</span>
+                </button>
+              </div>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- CHRONOLOGICAL ACTIVITY TIMELINE -->
+        <div class="card timeline-card">
+          <div class="card-title-row">
+            <h3>📅 Schedule Timeline</h3>
+            <span class="timeline-count-badge">{{ logs.length }} Blocks Logged</span>
+          </div>
+
+          <div *ngIf="logs.length === 0" class="empty-timeline">
+            <span class="empty-icon">⏳</span>
+            <h4>No activity blocks logged for this day</h4>
+            <p>Use the form above to log your daily activities. Time blocks cannot overlap.</p>
+          </div>
+
+          <div *ngIf="logs.length > 0" class="timeline-list">
+            <div
+              *ngFor="let log of logs"
+              class="timeline-item"
+              [style.border-left-color]="getLogCategory(log)?.color || '#10b981'">
+              
+              <div class="timeline-time-col">
+                <span class="time-range">{{ log.startTime }} - {{ log.endTime }}</span>
+                <span class="duration-badge">{{ formatDuration(log.durationMinutes) }}</span>
+              </div>
+
+              <div class="timeline-content-col">
+                <div class="log-title-wrap">
+                  <span class="log-cat-pill" [style.background-color]="(getLogCategory(log)?.color || '#10b981') + '22'" [style.color]="getLogCategory(log)?.color || '#10b981'">
+                    {{ getLogCategory(log)?.emoji || '⚡' }} {{ getLogCategory(log)?.name || 'General' }}
+                  </span>
+                  <span class="log-title-text">{{ log.title }}</span>
+                </div>
+              </div>
+
+              <div class="timeline-actions">
+                <button
+                  type="button"
+                  class="btn-delete-log"
+                  (click)="deleteLog(log)"
+                  title="Delete log entry">
+                  ✕
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: Category 24h Targets Breakdown -->
+      <div class="categories-column">
+        <div class="card categories-breakdown-card">
+          <div class="card-title-row">
+            <h3>🎯 24h Category Breakdown</h3>
+            <span class="budget-tag">Daily Goals</span>
+          </div>
+          <p class="card-caption">Track your actual logged hours against your daily target allocations.</p>
+
+          <div class="category-breakdown-list">
+            <div *ngFor="let sum of categorySummaries" class="category-progress-item">
+              
+              <div class="cat-item-header">
+                <div class="cat-name-box">
+                  <span class="cat-emoji-box" [style.background-color]="sum.category.color + '20'">
+                    {{ sum.category.emoji }}
+                  </span>
+                  <div>
+                    <h4 class="cat-name">{{ sum.category.name }}</h4>
+                    <span class="cat-target-subtext">Goal: {{ sum.targetHours }} hrs</span>
+                  </div>
+                </div>
+
+                <div class="cat-val-box">
+                  <span class="cat-logged-val" [style.color]="sum.category.color">
+                    {{ sum.loggedHours }}h
+                  </span>
+                  <span class="cat-pct-subtext">{{ sum.progressPct }}%</span>
+                </div>
+              </div>
+
+              <!-- Progress Bar -->
+              <div class="cat-progress-track">
+                <div
+                  class="cat-progress-fill"
+                  [style.width.%]="sum.progressPct"
+                  [style.background-color]="sum.category.color">
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <div class="card-footer-note">
+            <span>Need to adjust your target hours?</span>
+            <a class="edit-link" (click)="openCategoryModal()">Edit 24h Goals →</a>
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+
+  }
+
+  <!-- 3. CATEGORY CONFIGURATION & ONBOARDING MODAL -->
+  <div class="modal-backdrop" *ngIf="showCategoryModal">
+    <div class="modal-card">
+      
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <span class="modal-badge" *ngIf="isOnboarding">🚀 Initial Setup</span>
+          <span class="modal-badge badge-edit" *ngIf="!isOnboarding">⚙️ Configure Goals</span>
+          <h3>{{ isOnboarding ? 'Set Up Your 24-Hour Daily Budget' : 'Edit Categories & 24h Goals' }}</h3>
+          <p class="modal-subtitle">
+            Distribute your full 24 hours across key life categories. The total target must equal exactly 24.0 hours.
+          </p>
+        </div>
+
+        <button *ngIf="!isOnboarding" type="button" class="btn-modal-close" (click)="closeCategoryModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+        
+        <!-- Live 24-Hour Gauge -->
+        <div class="live-gauge-box" [class.gauge-valid]="isModalHoursValid" [class.gauge-invalid]="!isModalHoursValid">
+          <div class="gauge-header">
+            <span>Total Daily Allocation:</span>
+            <span class="gauge-sum">
+              <strong>{{ modalTotalHours }}</strong> / 24.0 hrs
+            </span>
+          </div>
+
+          <div class="gauge-status-msg">
+            <span *ngIf="isModalHoursValid">✅ Perfect! Allocation totals exactly 24.0 hours.</span>
+            <span *ngIf="!isModalHoursValid && modalTotalHours < 24.0">
+              ⚠️ Missing {{ 24.0 - modalTotalHours | number:'1.1-1' }} hrs to reach 24.0 hours.
+            </span>
+            <span *ngIf="!isModalHoursValid && modalTotalHours > 24.0">
+              ⚠️ Exceeds 24.0 hours by {{ modalTotalHours - 24.0 | number:'1.1-1' }} hrs.
+            </span>
+          </div>
+        </div>
+
+        <!-- Categories Table / List -->
+        <div class="modal-categories-list">
+          <div *ngFor="let cat of editingCategories; let i = index" class="modal-cat-row">
+            
+            <!-- Emoji Input -->
+            <input
+              type="text"
+              class="cat-emoji-input"
+              [(ngModel)]="cat.emoji"
+              maxlength="4"
+              title="Category Emoji"
+            />
+
+            <!-- Category Name -->
+            <input
+              type="text"
+              class="cat-name-input"
+              [(ngModel)]="cat.name"
+              placeholder="Category Name"
+              required
+            />
+
+            <!-- Target Hours -->
+            <div class="cat-hours-input-wrap">
+              <input
+                type="number"
+                class="cat-hours-input"
+                [(ngModel)]="cat.targetHours"
+                step="0.5"
+                min="0.5"
+                max="24"
+                required
+              />
+              <span class="hours-suffix">hrs</span>
+            </div>
+
+            <!-- Color Picker -->
+            <input
+              type="color"
+              class="cat-color-input"
+              [(ngModel)]="cat.color"
+              title="Category Color"
+            />
+
+            <!-- Delete Row -->
+            <button
+              type="button"
+              class="btn-remove-cat"
+              (click)="removeCategoryRow(i)"
+              title="Remove Category">
+              🗑️
+            </button>
+          </div>
+        </div>
+
+        <!-- Modal Utility Actions -->
+        <div class="modal-utils-row">
+          <button type="button" class="btn-add-cat-row" (click)="addCategoryRow()">
+            + Add Category
+          </button>
+          <button type="button" class="btn-template-reset" (click)="loadDefaultTemplate()">
+            🔄 Load Recommended 24h Template
+          </button>
+        </div>
+
+      </div>
+
+      <div class="modal-footer">
+        <button
+          *ngIf="!isOnboarding"
+          type="button"
+          class="btn-modal-cancel"
+          (click)="closeCategoryModal()">
+          Cancel
+        </button>
+
+        <button
+          type="button"
+          class="btn-modal-save"
+          [disabled]="isSavingCategories || !isModalHoursValid"
+          (click)="saveCategories()">
+          <span *ngIf="isSavingCategories">Saving Goals... ⏳</span>
+          <span *ngIf="!isSavingCategories">Save 24h Goals 🎯</span>
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. COMPARE GOALS VS ACTUALS GRAPH POPUP MODAL -->
+  <div class="modal-backdrop" *ngIf="showCompareModal">
+    <div class="modal-card compare-modal-card" [class.modal-large-view]="isLargeView">
+      
+      <!-- Modal Header -->
+      <div class="modal-header">
+        <div class="modal-title-group">
+          <div class="compare-title-row">
+            <span class="modal-badge badge-compare">📊 24-Hour Goal vs Actual Graph</span>
+            
+            <!-- Range Selector -->
+            <div class="compare-range-pills">
+              <button
+                type="button"
+                class="comp-range-btn"
+                [class.active]="compareRange === '7d'"
+                (click)="setCompareRange('7d')">
+                Last 7 Days
+              </button>
+              <button
+                type="button"
+                class="comp-range-btn"
+                [class.active]="compareRange === '14d'"
+                (click)="setCompareRange('14d')">
+                Last 14 Days
+              </button>
+              <button
+                type="button"
+                class="comp-range-btn"
+                [class.active]="compareRange === '30d'"
+                (click)="setCompareRange('30d')">
+                Last 30 Days
+              </button>
+            </div>
+
+            <!-- Large View Toggle Button -->
+            <button
+              type="button"
+              class="btn-toggle-large"
+              (click)="toggleLargeView()"
+              [title]="isLargeView ? 'Switch to Standard View' : 'Expand to Fullscreen Large View'">
+              <span *ngIf="!isLargeView">⛶ Large View</span>
+              <span *ngIf="isLargeView">🗗 Standard View</span>
+            </button>
+          </div>
+
+          <h3>Daily 24-Hour Time Breakdown Comparison</h3>
+          <p class="modal-subtitle">
+            Parallel view: Each daily category bar aligns strictly with the target category on the left.
+          </p>
+        </div>
+
+        <button type="button" class="btn-modal-close" (click)="closeCompareModal()">✕</button>
+      </div>
+
+      <!-- Modal Body (Graph) -->
+      <div class="modal-body compare-modal-body">
+        
+        @if (isLoadingCompare) {
+          <app-loader message="Generating comparative time graphs..." subMessage="Aligning daily time allocations against your 24h budget"></app-loader>
+        } @else {
+
+          <!-- Dual Section: Left Fixed Goal + Right Scrollable Daily Bars -->
+          <div class="compare-graph-stage">
+            
+            <!-- FIXED LEFT COLUMN: TARGET GOAL BAR -->
+            <div class="fixed-goal-col">
+              <div class="col-head-box">
+                <span class="col-badge-goal">🎯 Target Goal</span>
+                <span class="col-subtext">{{ totalCategoryBudget }}h Budget</span>
+              </div>
+
+              <!-- 24h Vertical Stacked Goal Bar -->
+              <div class="stacked-bar-track">
+                <div
+                  *ngFor="let cat of categories"
+                  class="bar-segment goal-segment"
+                  [style.flex]="(cat.targetHours || 0.1) + ' 1 0px'"
+                  [style.height.%]="getGoalSegmentHeight(cat)"
+                  [style.background-color]="cat.color">
+
+                  <!-- Rich Tooltip on Hover -->
+                  <div class="segment-tooltip">
+                    <strong>Target Allocation</strong>
+                    <span>{{ cat.emoji }} {{ cat.name }}: <strong>{{ cat.targetHours }} hrs</strong></span>
+                    <small>{{ ((cat.targetHours || 0) / (totalCategoryBudget || 24)) * 100 | number:'1.0-1' }}% of budget</small>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-foot-label">
+                <strong>Target</strong>
+              </div>
+            </div>
+
+            <!-- RIGHT HORIZONTALLY SCROLLABLE / SWIPABLE DAILY ACCUMULATED BARS -->
+            <div class="compare-scroll-area">
+              <div class="compare-days-track">
+                
+                <div
+                  *ngFor="let day of compareDays"
+                  class="compare-day-column"
+                  [class.is-today-col]="day.isToday">
+                  
+                  <!-- Day Header -->
+                  <div class="col-head-box">
+                    <span class="col-date-title" [class.text-today]="day.isToday">{{ day.dayLabel }}</span>
+                    <span class="col-logged-badge" [class.badge-full-day]="day.totalLoggedHours >= (totalCategoryBudget - 0.5)">
+                      {{ day.totalLoggedHours }}h / {{ totalCategoryBudget }}h
+                    </span>
+                  </div>
+
+                  <!-- 24h Vertical Parallel Slots Bar -->
+                  <div class="stacked-bar-track daily-actual-track">
+                    
+                    <div
+                      *ngFor="let seg of day.segments"
+                      class="parallel-slot"
+                      [style.flex]="(seg.targetHours || 0.1) + ' 1 0px'"
+                      [style.height.%]="seg.slotHeightPct"
+                      [class.slot-overflow]="seg.isOverTarget">
+                      
+                      <!-- Slot Background/Empty Track with subtle category tint -->
+                      <div class="slot-empty-bg" [style.background-color]="seg.color + '18'"></div>
+
+                      <!-- Slot Fill matching actual logged time -->
+                      <div
+                        class="slot-fill"
+                        [style.height.%]="seg.fillPct"
+                        [style.background-color]="seg.color">
+                      </div>
+
+                      <!-- Overflow Badge / Cross Indicator if logged > target -->
+                      <div *ngIf="seg.isOverTarget" class="slot-overflow-tag" [title]="'+' + seg.overflowHours + 'h over goal (' + seg.loggedHours + 'h / ' + seg.targetHours + 'h)'">
+                        <span>+{{ seg.overflowHours }}h ⚠️</span>
+                      </div>
+
+                      <!-- Slot Label / Content -->
+                      <div class="parallel-slot-content" *ngIf="(seg.targetHours || 0) >= 1.2">
+                        <span class="parallel-slot-hours" *ngIf="seg.loggedHours > 0">
+                          {{ seg.loggedHours }}h
+                        </span>
+                        <span class="parallel-slot-empty" *ngIf="seg.loggedHours === 0">-</span>
+                      </div>
+                      <div class="parallel-slot-content parallel-slot-tiny" *ngIf="(seg.targetHours || 0) < 1.2 && (seg.targetHours || 0) >= 0.7">
+                        <span class="parallel-slot-hours" *ngIf="seg.loggedHours > 0">
+                          {{ seg.loggedHours }}
+                        </span>
+                      </div>
+
+                      <!-- Tooltip on hover -->
+                      <div class="segment-tooltip slot-tooltip">
+                        <strong>{{ day.formattedDate }}</strong>
+                        <span>{{ seg.emoji }} {{ seg.name }}: <strong>{{ seg.loggedHours }}h</strong> / {{ seg.targetHours }}h</span>
+                        <small *ngIf="seg.isOverTarget" style="color: #f87171;">⚠️ Exceeded target by +{{ seg.overflowHours }}h</small>
+                        <small *ngIf="!seg.isOverTarget && seg.loggedHours > 0">{{ seg.fillPct }}% of daily goal</small>
+                        <small *ngIf="seg.loggedHours === 0">0h logged</small>
+                      </div>
+
+                    </div>
+
+                  </div>
+
+                  <!-- Day Footer -->
+                  <div class="col-foot-label">
+                    <span class="foot-date-str">{{ day.shortDate || (day.formattedDate.split(',')[1] || day.formattedDate) }}</span>
+                  </div>
+
+                </div>
+
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Bottom Category Legend -->
+          <div class="compare-legend-bar">
+            <span class="legend-title">Categories:</span>
+            <div class="legend-items-wrap">
+              <div *ngFor="let cat of categories" class="comp-legend-item">
+                <span class="legend-color-dot" [style.background-color]="cat.color"></span>
+                <span class="legend-cat-text">{{ cat.emoji }} {{ cat.name }} ({{ cat.targetHours }}h)</span>
+              </div>
+            </div>
+          </div>
+
+        }
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer">
+        <button type="button" class="btn-modal-cancel" (click)="closeCompareModal()">
+          Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+

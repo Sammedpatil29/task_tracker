@@ -7,15 +7,15 @@ export type ThemeMode = 'light' | 'dark' | 'system';
 export class ThemeService {
   private readonly STORAGE_KEY = 'discipline_theme';
   
-  theme$ = new BehaviorSubject<ThemeMode>('system');
-  isDark$ = new BehaviorSubject<boolean>(false);
+  theme$ = new BehaviorSubject<ThemeMode>('dark');
+  isDark$ = new BehaviorSubject<boolean>(true);
 
   constructor() {
     this.initTheme();
   }
 
   private initTheme() {
-    const saved = (localStorage.getItem(this.STORAGE_KEY) as ThemeMode) || 'system';
+    const saved = (localStorage.getItem(this.STORAGE_KEY) as ThemeMode) || 'dark';
     this.setTheme(saved);
 
     // Listen for OS system theme changes if set to system

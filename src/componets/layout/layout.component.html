@@ -31,6 +31,17 @@
       </div>
 
       <div class="topbar-right">
+        <!-- Today Water Quick Indicator -->
+        <div class="topbar-water-pill" [routerLink]="['/diet']" title="Today's Water Intake - Click to view Diet Tracker">
+          <span class="topbar-water-icon">💧</span>
+          <span class="topbar-water-text">
+            <strong>{{ tracker.todayWater$ | async }}</strong> <span class="topbar-water-sub">/ {{ tracker.waterGoal$ | async }} ml</span>
+          </span>
+          <button type="button" class="btn-topbar-water-add" (click)="$event.stopPropagation(); tracker.quickAddTodayWater(250)" title="Quick Add 250ml">
+            +250
+          </button>
+        </div>
+
         <!-- Theme Toggle Button -->
         <button
           class="btn-theme-toggle"
@@ -67,6 +78,54 @@
         Got it! ✨
       </button>
       <button class="toast-close" (click)="hydrationService.dismissReminder()" title="Dismiss">✕</button>
+    </div>
+  </div>
+
+  <!-- TRANSPARENT 3-METHOD TRACK SELECTION POPUP -->
+  <div class="track-prompt-overlay" *ngIf="showTrackPrompt" (click)="closeTrackPrompt()">
+    <div class="track-prompt-card" (click)="$event.stopPropagation()">
+      <!-- Ambient Glow Behind Glass -->
+      <div class="card-ambient-glow"></div>
+
+      <!-- Close Button -->
+      <button type="button" class="btn-prompt-close" (click)="closeTrackPrompt()" title="Dismiss (Esc)">✕</button>
+
+      <div class="prompt-header">
+        <div class="prompt-kicker">✨ Daily Tracking Focus</div>
+        <h2 class="prompt-title">What would you like to track right now?</h2>
+        <p class="prompt-subtitle">
+          Welcome back{{ userName && userName !== 'User' ? ', ' + (userName | titlecase) : '' }}! Choose your tracking focus to jump straight into action:
+        </p>
+      </div>
+
+      <!-- 3 Tracking Methods Grid -->
+      <div class="prompt-options-grid">
+        <div
+          *ngFor="let opt of trackOptions"
+          class="prompt-opt-card"
+          [style.--opt-accent]="opt.color"
+          (click)="selectTrackOption(opt.path)">
+          
+          <div class="opt-card-top">
+            <div class="opt-icon-bubble">{{ opt.icon }}</div>
+            <span class="opt-badge">{{ opt.badge }}</span>
+          </div>
+
+          <h3 class="opt-title">{{ opt.title }}</h3>
+          <p class="opt-desc">{{ opt.description }}</p>
+
+          <div class="opt-action-btn">
+            <span>{{ opt.actionText }} ➔</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Secondary Actions -->
+      <div class="prompt-footer">
+        <button type="button" class="btn-prompt-secondary" (click)="selectTrackOption('/analytics')">
+          📊 Or explore Overall Analytics & Insights
+        </button>
+      </div>
     </div>
   </div>
 

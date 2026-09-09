@@ -1,0 +1,423 @@
+<div class="diet-page">
+
+  <!-- ===== HEADER ===== -->
+  <div class="diet-header">
+    <div class="diet-title-group">
+      <h2>🥗 Diet Tracker</h2>
+      <p>Track daily nutrition, log meals, and hit your macro goals</p>
+    </div>
+    <div class="diet-header-actions">
+      <!-- Water Tracker (Left of Date) -->
+      <div class="water-tracker-widget" [class.water-goal-met]="waterIntake >= (goal.waterMl || 2500)">
+        <div class="water-icon-wrap" title="Daily Water Intake">💧</div>
+        <div class="water-info">
+          <div class="water-amount">
+            <strong>{{ waterIntake }}</strong>
+            <span class="water-target">/ {{ goal.waterMl || 2500 }} ml</span>
+          </div>
+          <div class="water-bar-track">
+            <div class="water-bar-fill" [style.width.%]="waterPct"></div>
+          </div>
+        </div>
+        <div class="water-quick-btns">
+          <button type="button" class="btn-water-quick" (click)="addWater(250)" title="Add 250ml (1 glass)">+250</button>
+          <button type="button" class="btn-water-quick" (click)="addWater(500)" title="Add 500ml (1 bottle)">+500</button>
+          <button type="button" class="btn-water-minus" (click)="addWater(-250)" [disabled]="waterIntake <= 0" title="Remove 250ml">-</button>
+        </div>
+      </div>
+
+      <!-- Date Navigator -->
+      <div class="date-nav">
+        <button class="date-nav-btn" (click)="prevDay()">‹</button>
+        <div class="date-nav-center">
+          <span class="date-nav-label" [class.today-label]="isToday()">{{ formattedCurrentDate }}</span>
+          <span class="date-nav-sub">{{ currentDateStr }}</span>
+        </div>
+        <button class="date-nav-btn" (click)="nextDay()" [disabled]="isToday()">›</button>
+      </div>
+      <a routerLink="/analytics" [queryParams]="{ tab: 'diet' }" class="btn-analytics-link" title="View Nutrition & Diet Analytics">
+        📊 View Analytics ➔
+      </a>
+      <button type="button" class="btn-goal" (click)="openGoalModal()">⚙️ Edit Goals</button>
+    </div>
+  </div>
+
+  <!-- ===== LOADER ===== -->
+  @if (isLoading) {
+    <app-loader message="Loading your nutrition data..." subMessage="Fetching goals and meal logs"></app-loader>
+  } @else {
+
+    <!-- ===== CALORIES RING + MACRO SUMMARY ===== -->
+    <div class="macro-overview-row">
+
+      <!-- Calorie Ring -->
+      <div class="calorie-ring-card">
+        <svg class="cal-ring-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background ring -->
+          <circle cx="50" cy="50" r="42" fill="none" stroke="var(--border-color)" stroke-width="8"/>
+          <!-- Progress ring -->
+          <circle cx="50" cy="50" r="42" fill="none"
+            [attr.stroke]="overCalories() ? '#ef4444' : '#f59e0b'"
+            stroke-width="8"
+            stroke-linecap="round"
+            stroke-dasharray="263.9"
+            [attr.stroke-dashoffset]="ringOffset(totals.calories, goal.dailyCalories)"
+            transform="rotate(-90 50 50)"
+            style="transition: stroke-dashoffset 0.5s ease"/>
+          <!-- Center text -->
+          <text x="50" y="45" text-anchor="middle" class="ring-val-text" fill="var(--text-primary)" font-size="13" font-weight="800">
+            {{ totals.calories | number:'1.0-0' }}
+          </text>
+          <text x="50" y="56" text-anchor="middle" fill="var(--text-muted)" font-size="5.5" font-weight="600">
+            of {{ goal.dailyCalories }} kcal
+          </text>
+        </svg>
+        <div class="cal-ring-meta">
+          <div class="cal-ring-label">Calories</div>
+          <div class="cal-remain" [class.over-limit]="overCalories()">
+            @if (overCalories()) {
+              <span>+{{ (totals.calories - goal.dailyCalories) | number:'1.0-0' }} over</span>
+            } @else {
+              <span>{{ remainingCalories() | number:'1.0-0' }} remaining</span>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Macro Pills -->
+      <div class="macro-pills-grid">
+
+        <!-- Protein -->
+        <div class="macro-pill">
+          <div class="macro-pill-head">
+            <span class="macro-dot" style="background:#10b981"></span>
+            <span class="macro-name">Protein</span>
+            <span class="macro-vals">{{ totals.proteinG | number:'1.0-1' }}g / {{ goal.proteinG }}g</span>
+          </div>
+          <div class="macro-bar-track">
+            <div class="macro-bar-fill" style="background:#10b981"
+              [style.width.%]="pct(totals.proteinG, goal.proteinG)">
+            </div>
+          </div>
+          <div class="macro-pct">{{ pct(totals.proteinG, goal.proteinG) }}%</div>
+        </div>
+
+        <!-- Carbs -->
+        <div class="macro-pill">
+          <div class="macro-pill-head">
+            <span class="macro-dot" style="background:#3b82f6"></span>
+            <span class="macro-name">Carbs</span>
+            <span class="macro-vals">{{ totals.carbsG | number:'1.0-1' }}g / {{ goal.carbsG }}g</span>
+          </div>
+          <div class="macro-bar-track">
+            <div class="macro-bar-fill" style="background:#3b82f6"
+              [style.width.%]="pct(totals.carbsG, goal.carbsG)">
+            </div>
+          </div>
+          <div class="macro-pct">{{ pct(totals.carbsG, goal.carbsG) }}%</div>
+        </div>
+
+        <!-- Fat -->
+        <div class="macro-pill">
+          <div class="macro-pill-head">
+            <span class="macro-dot" style="background:#f43f5e"></span>
+            <span class="macro-name">Fat</span>
+            <span class="macro-vals">{{ totals.fatG | number:'1.0-1' }}g / {{ goal.fatG }}g</span>
+          </div>
+          <div class="macro-bar-track">
+            <div class="macro-bar-fill" style="background:#f43f5e"
+              [style.width.%]="pct(totals.fatG, goal.fatG)">
+            </div>
+          </div>
+          <div class="macro-pct">{{ pct(totals.fatG, goal.fatG) }}%</div>
+        </div>
+
+        <!-- Fiber -->
+        <div class="macro-pill">
+          <div class="macro-pill-head">
+            <span class="macro-dot" style="background:#8b5cf6"></span>
+            <span class="macro-name">Fiber</span>
+            <span class="macro-vals">{{ totals.fiberG | number:'1.0-1' }}g / {{ goal.fiberG }}g</span>
+          </div>
+          <div class="macro-bar-track">
+            <div class="macro-bar-fill" style="background:#8b5cf6"
+              [style.width.%]="pct(totals.fiberG, goal.fiberG)">
+            </div>
+          </div>
+          <div class="macro-pct">{{ pct(totals.fiberG, goal.fiberG) }}%</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== MEAL LOG SECTION ===== -->
+    <div class="meal-section">
+      <div class="meal-section-head">
+        <h3>🍽️ Meals Logged <span class="meal-count-badge">{{ mealLogs.length }}</span></h3>
+        <div class="meal-add-btns">
+          @for (type of mealTypes; track type) {
+            <button type="button" class="btn-add-type" (click)="openAddMeal(type)">
+              {{ mealTypeIcons[type] }} {{ type }}
+            </button>
+          }
+          <button type="button" class="btn-add-meal" (click)="openAddMeal()">+ Add Meal</button>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      @if (mealLogs.length === 0) {
+        <div class="empty-meals">
+          <div class="empty-meal-icon">🥦</div>
+          <p>No meals logged for {{ formattedCurrentDate }}</p>
+          <span>Use the buttons above to log your first meal</span>
+          <button type="button" class="btn-add-meal-empty" (click)="openAddMeal()">+ Log First Meal</button>
+        </div>
+      } @else {
+
+        <!-- Group by meal type -->
+        @for (type of getUsedMealTypes(); track type) {
+          <div class="meal-type-group">
+            <div class="meal-type-head">
+              <span class="meal-type-icon">{{ mealTypeIcons[type] }}</span>
+              <span class="meal-type-name">{{ type }}</span>
+              <span class="meal-type-kcal">{{ getTypeCalories(type) | number:'1.0-0' }} kcal</span>
+              <button type="button" class="btn-add-type-inline" (click)="openAddMeal(type)">+ Add</button>
+            </div>
+
+            <div class="meal-cards">
+              @for (meal of getMealsByType(type); track meal.id) {
+                <div class="meal-card">
+                  <div class="meal-card-main">
+                    <div class="meal-card-name">{{ meal.name }}</div>
+                    <div class="meal-card-macros">
+                      <span class="mc-cal">🔥 {{ meal.calories | number:'1.0-0' }} kcal</span>
+                      @if (meal.proteinG) { <span class="mc-p">P: {{ meal.proteinG }}g</span> }
+                      @if (meal.carbsG) { <span class="mc-c">C: {{ meal.carbsG }}g</span> }
+                      @if (meal.fatG) { <span class="mc-f">F: {{ meal.fatG }}g</span> }
+                      @if (meal.fiberG) { <span class="mc-fi">Fi: {{ meal.fiberG }}g</span> }
+                    </div>
+                    @if (meal.notes) {
+                      <div class="meal-card-notes">📝 {{ meal.notes }}</div>
+                    }
+                  </div>
+                  <div class="meal-card-actions">
+                    <button class="btn-edit-meal" (click)="openEditMeal(meal)">✏️</button>
+                    <button class="btn-delete-meal" (click)="deleteMeal(meal.id!)">🗑️</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Unlogged meal type quick-add buttons -->
+        <div class="quick-add-row">
+          @for (type of mealTypes; track type) {
+            @if (getMealsByType(type).length === 0) {
+              <button type="button" class="btn-quick-add" (click)="openAddMeal(type)">
+                {{ mealTypeIcons[type] }} Add {{ type }}
+              </button>
+            }
+          }
+        </div>
+
+      }
+    </div>
+
+  }
+
+
+  <!-- ===== GOAL MODAL ===== -->
+  @if (showGoalModal) {
+    <div class="modal-backdrop" (click)="closeGoalModal()"></div>
+    <div class="modal-panel">
+      <div class="modal-header">
+        <h3>⚙️ Set Daily Nutrition Goals</h3>
+        <button class="modal-close" (click)="closeGoalModal()">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Daily Calories -->
+        <div class="form-group-lg">
+          <label>Daily Calorie Target</label>
+          <div class="calorie-input-row">
+            <input type="number" class="input-lg" [(ngModel)]="goalDraft.dailyCalories"
+              min="500" max="10000" placeholder="e.g. 2200">
+            <span class="input-unit">kcal</span>
+          </div>
+          <button type="button" class="btn-auto-calc" (click)="autoCalcMacros()">
+            ✨ Auto-calculate macros (30/40/30 split)
+          </button>
+        </div>
+
+        <div class="modal-divider">Macro Targets</div>
+
+        <!-- Macros Grid -->
+        <div class="macro-form-grid">
+          <div class="macro-form-item">
+            <label>🟢 Protein (g)</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="goalDraft.proteinG" min="0" max="500">
+              <span class="input-unit">g</span>
+            </div>
+            <small>{{ (goalDraft.proteinG * 4) | number:'1.0-0' }} kcal ({{ goalDraft.dailyCalories ? (goalDraft.proteinG * 4 / goalDraft.dailyCalories * 100 | number:'1.0-0') : 0 }}%)</small>
+          </div>
+
+          <div class="macro-form-item">
+            <label>🔵 Carbs (g)</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="goalDraft.carbsG" min="0" max="800">
+              <span class="input-unit">g</span>
+            </div>
+            <small>{{ (goalDraft.carbsG * 4) | number:'1.0-0' }} kcal ({{ goalDraft.dailyCalories ? (goalDraft.carbsG * 4 / goalDraft.dailyCalories * 100 | number:'1.0-0') : 0 }}%)</small>
+          </div>
+
+          <div class="macro-form-item">
+            <label>🔴 Fat (g)</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="goalDraft.fatG" min="0" max="400">
+              <span class="input-unit">g</span>
+            </div>
+            <small>{{ (goalDraft.fatG * 9) | number:'1.0-0' }} kcal ({{ goalDraft.dailyCalories ? (goalDraft.fatG * 9 / goalDraft.dailyCalories * 100 | number:'1.0-0') : 0 }}%)</small>
+          </div>
+
+          <div class="macro-form-item">
+            <label>🟣 Fiber (g)</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="goalDraft.fiberG" min="0" max="100">
+              <span class="input-unit">g</span>
+            </div>
+            <small>Recommended: 25–38g/day</small>
+          </div>
+
+          <div class="macro-form-item">
+            <label>💧 Water (ml)</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="goalDraft.waterMl" min="500" max="6000">
+              <span class="input-unit">ml</span>
+            </div>
+            <small>Recommended: 2000–3000 ml</small>
+          </div>
+        </div>
+
+        <!-- Macro calorie check -->
+        <div class="macro-cal-check" [class.over]="(goalDraft.proteinG*4 + goalDraft.carbsG*4 + goalDraft.fatG*9) > (goalDraft.dailyCalories || 2000)">
+          <span>Macro calories: {{ (goalDraft.proteinG * 4 + goalDraft.carbsG * 4 + goalDraft.fatG * 9) | number:'1.0-0' }} kcal</span>
+          <span class="check-vs">vs target {{ goalDraft.dailyCalories || 0 }} kcal</span>
+        </div>
+
+        @if (goalSaveMsg) {
+          <div class="goal-save-msg" [class.success]="goalSaveMsg.includes('✅')" [class.error]="goalSaveMsg.includes('❌') || goalSaveMsg.includes('⚠️')">
+            {{ goalSaveMsg }}
+          </div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeGoalModal()">Cancel</button>
+        <button class="btn-save-goal" (click)="saveGoal()" [disabled]="isSaving">
+          {{ isSaving ? 'Saving...' : '💾 Save Goals' }}
+        </button>
+      </div>
+    </div>
+  }
+
+
+  <!-- ===== MEAL FORM MODAL ===== -->
+  @if (showMealForm) {
+    <div class="modal-backdrop" (click)="closeMealForm()"></div>
+    <div class="modal-panel meal-form-panel">
+      <div class="modal-header">
+        <h3>{{ editingMealId ? '✏️ Edit Meal' : '➕ Log Meal' }}</h3>
+        <button class="modal-close" (click)="closeMealForm()">✕</button>
+      </div>
+
+      <div class="modal-body">
+
+        <!-- Meal Name -->
+        <div class="form-group">
+          <label>Meal Name *</label>
+          <input type="text" class="input-field" [(ngModel)]="mealForm.name"
+            placeholder="e.g. Chicken Rice Bowl, Banana, Protein Shake...">
+        </div>
+
+        <!-- Meal Type -->
+        <div class="form-group">
+          <label>Meal Type</label>
+          <div class="meal-type-pills">
+            @for (type of mealTypes; track type) {
+              <button type="button" class="meal-type-pill"
+                [class.active]="mealForm.mealType === type"
+                (click)="mealForm.mealType = type">
+                {{ mealTypeIcons[type] }} {{ type }}
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Calories (Primary) -->
+        <div class="form-group">
+          <label>🔥 Calories *</label>
+          <div class="macro-input-row">
+            <input type="number" class="input-field input-wide" [(ngModel)]="mealForm.calories"
+              min="0" max="5000" placeholder="e.g. 450">
+            <span class="input-unit">kcal</span>
+          </div>
+        </div>
+
+        <!-- Macros Grid -->
+        <div class="form-macros-label">Macros <span class="optional-tag">(optional)</span></div>
+        <div class="macro-form-grid">
+          <div class="macro-form-item">
+            <label>🟢 Protein</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="mealForm.proteinG" min="0" placeholder="0">
+              <span class="input-unit">g</span>
+            </div>
+          </div>
+          <div class="macro-form-item">
+            <label>🔵 Carbs</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="mealForm.carbsG" min="0" placeholder="0">
+              <span class="input-unit">g</span>
+            </div>
+          </div>
+          <div class="macro-form-item">
+            <label>🔴 Fat</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="mealForm.fatG" min="0" placeholder="0">
+              <span class="input-unit">g</span>
+            </div>
+          </div>
+          <div class="macro-form-item">
+            <label>🟣 Fiber</label>
+            <div class="macro-input-row">
+              <input type="number" class="input-macro" [(ngModel)]="mealForm.fiberG" min="0" placeholder="0">
+              <span class="input-unit">g</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-group">
+          <label>Notes <span class="optional-tag">(optional)</span></label>
+          <input type="text" class="input-field" [(ngModel)]="mealForm.notes" placeholder="e.g. homemade, brand name...">
+        </div>
+
+        @if (mealFormError) {
+          <div class="form-error">⚠️ {{ mealFormError }}</div>
+        }
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeMealForm()">Cancel</button>
+        <button class="btn-save-goal" (click)="saveMeal()" [disabled]="isLoggingMeal">
+          {{ isLoggingMeal ? 'Saving...' : (editingMealId ? '💾 Update Meal' : '✅ Log Meal') }}
+        </button>
+      </div>
+    </div>
+  }
+
+</div>
+

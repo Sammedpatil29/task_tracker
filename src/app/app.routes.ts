@@ -14,7 +14,7 @@ export const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'home',
+        redirectTo: 'analytics',
         pathMatch: 'full'
       },
       {
@@ -26,8 +26,16 @@ export const routes: Routes = [
         loadComponent: () => import('../componets/analytics/analytics.component').then(m => m.AnalyticsComponent)
       },
       {
+        path: 'productivity',
+        loadComponent: () => import('../componets/productivity/productivity.component').then(m => m.ProductivityComponent)
+      },
+      {
         path: 'settings',
         loadComponent: () => import('../componets/settings/settings.component').then(m => m.SettingsComponent)
+      },
+      {
+        path: 'diet',
+        loadComponent: () => import('../componets/diet/diet.component').then(m => m.DietComponent)
       }
     ]
   },

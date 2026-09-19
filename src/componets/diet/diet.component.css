@@ -144,11 +144,18 @@
   transition: all 0.15s ease;
 }
 
-.btn-water-quick:hover {
+.btn-water-quick:hover:not(:disabled) {
   background: #38bdf8;
   color: #000;
   border-color: #38bdf8;
   transform: translateY(-1px);
+}
+
+.btn-water-quick:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
 }
 
 .btn-water-minus {

@@ -93,7 +93,7 @@ export class DietComponent implements OnInit {
   };
   readonly macroColors = { calories: '#f59e0b', protein: '#10b981', carbs: '#3b82f6', fat: '#f43f5e', fiber: '#8b5cf6' };
 
-  constructor(private tracker: TaskTrackerService) {}
+  constructor(public tracker: TaskTrackerService) {}
 
   ngOnInit() {
     this.currentDate = new Date();
@@ -156,6 +156,9 @@ export class DietComponent implements OnInit {
   }
 
   addWater(delta: number) {
+    if (this.tracker.isWaterUpdating$.value) return;
+    this.tracker.isWaterUpdating$.next(true);
+
     const prev = this.waterIntake;
     this.waterIntake = Math.max(0, this.waterIntake + delta);
     if (this.isToday()) {
@@ -169,12 +172,14 @@ export class DietComponent implements OnInit {
             this.tracker.todayWater$.next(res.amountMl);
           }
         }
+        this.tracker.isWaterUpdating$.next(false);
       },
       error: () => {
         this.waterIntake = prev;
         if (this.isToday()) {
           this.tracker.todayWater$.next(prev);
         }
+        this.tracker.isWaterUpdating$.next(false);
       }
     });
   }

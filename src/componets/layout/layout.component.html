@@ -37,7 +37,7 @@
           <span class="topbar-water-text">
             <strong>{{ tracker.todayWater$ | async }}</strong> <span class="topbar-water-sub">/ {{ tracker.waterGoal$ | async }} ml</span>
           </span>
-          <button type="button" class="btn-topbar-water-add" (click)="$event.stopPropagation(); tracker.quickAddTodayWater(250)" title="Quick Add 250ml">
+          <button type="button" class="btn-topbar-water-add" [disabled]="tracker.isWaterUpdating$ | async" (click)="$event.stopPropagation(); tracker.quickAddTodayWater(250)" title="Quick Add 250ml">
             +250
           </button>
         </div>

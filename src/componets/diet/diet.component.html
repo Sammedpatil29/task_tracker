@@ -20,9 +20,9 @@
           </div>
         </div>
         <div class="water-quick-btns">
-          <button type="button" class="btn-water-quick" (click)="addWater(250)" title="Add 250ml (1 glass)">+250</button>
-          <button type="button" class="btn-water-quick" (click)="addWater(500)" title="Add 500ml (1 bottle)">+500</button>
-          <button type="button" class="btn-water-minus" (click)="addWater(-250)" [disabled]="waterIntake <= 0" title="Remove 250ml">-</button>
+          <button type="button" class="btn-water-quick" [disabled]="tracker.isWaterUpdating$ | async" (click)="addWater(250)" title="Add 250ml (1 glass)">+250</button>
+          <button type="button" class="btn-water-quick" [disabled]="tracker.isWaterUpdating$ | async" (click)="addWater(500)" title="Add 500ml (1 bottle)">+500</button>
+          <button type="button" class="btn-water-minus" [disabled]="waterIntake <= 0 || (tracker.isWaterUpdating$ | async)" (click)="addWater(-250)" title="Remove 250ml">-</button>
         </div>
       </div>
 

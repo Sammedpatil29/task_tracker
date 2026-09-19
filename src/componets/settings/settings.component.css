@@ -18,14 +18,14 @@
 
 .settings-container {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 24px;
   align-items: stretch;
 }
 
-@media (max-width: 1280px) {
+@media (max-width: 1024px) {
   .settings-container {
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    grid-template-columns: 1fr;
   }
 }
 
@@ -42,11 +42,11 @@
   }
 
   .settings-container {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
   }
 
-  /* Show logout button inside settings only for small screen */
-  .logout-card {
+  /* Show logout button inside settings only for small screen / mobile */
+  .settings-card.logout-card {
     display: flex !important;
   }
 }
@@ -491,11 +491,18 @@
   cursor: not-allowed;
 }
 
-/* SESSION & LOGOUT CARD - only visible on small screens */
+/* SESSION & LOGOUT CARD - completely removed on web / desktop */
 .logout-card {
   display: none !important;
   border: 1.5px solid rgba(239, 68, 68, 0.25);
   background: var(--bg-card);
+}
+
+@media (min-width: 769px) {
+  .logout-card,
+  .settings-card.logout-card {
+    display: none !important;
+  }
 }
 
 .logout-card-content {

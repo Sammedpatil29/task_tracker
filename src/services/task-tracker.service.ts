@@ -222,6 +222,7 @@ export class TaskTrackerService {
   // --- Water Tracking Shared State (Top Bar & Diet Tracker) ---
   todayWater$ = new BehaviorSubject<number>(0);
   waterGoal$ = new BehaviorSubject<number>(2500);
+  isWaterUpdating$ = new BehaviorSubject<boolean>(false);
 
   getTodayDateStr(): string {
     const d = new Date();
@@ -248,6 +249,8 @@ export class TaskTrackerService {
   }
 
   quickAddTodayWater(delta: number) {
+    if (this.isWaterUpdating$.value) return;
+    this.isWaterUpdating$.next(true);
     const today = this.getTodayDateStr();
     const current = this.todayWater$.value;
     const nextVal = Math.max(0, current + delta);
@@ -257,8 +260,12 @@ export class TaskTrackerService {
         if (res && res.amountMl !== undefined) {
           this.todayWater$.next(res.amountMl);
         }
+        this.isWaterUpdating$.next(false);
       },
-      error: () => this.todayWater$.next(current)
+      error: () => {
+        this.todayWater$.next(current);
+        this.isWaterUpdating$.next(false);
+      }
     });
   }
 

@@ -44,8 +44,8 @@ jobs:
       - name: 📦 Install NPM Dependencies
         run: npm ci || npm install
 
-      - name: 🏗️ Build Angular Web Application
-        run: npm run build
+      - name: 🏗️ Build Angular Web Application (Production)
+        run: npm run build -- --configuration production
 
       - name: 🔄 Sync Capacitor Android Platform
         run: npx cap sync android

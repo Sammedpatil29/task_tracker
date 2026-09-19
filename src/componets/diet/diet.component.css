@@ -1050,12 +1050,75 @@
 .btn-save-goal:hover { background: #d97706; }
 .btn-save-goal:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* =========================================================================
-   RESPONSIVE
-========================================================================= */
+.diet-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 @media (max-width: 768px) {
-  .diet-page { padding: 16px 16px; }
-  .diet-header { flex-direction: column; align-items: flex-start; }
+  .diet-page {
+    padding: 16px;
+    padding-bottom: 36px !important;
+  }
+
+  /* Do not show descriptions associated with headers on small screen */
+  .diet-title-group p {
+    display: none !important;
+  }
+
+  .diet-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  .diet-header-actions {
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+  }
+
+  /* Water and date take 100% width each */
+  .water-tracker-widget {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .date-nav {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Analytics and edit in same row */
+  .diet-action-btns {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .btn-analytics-link,
+  .btn-goal {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 11.5px !important;
+    padding: 8px 6px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+  }
+
   .macro-pills-grid { grid-template-columns: 1fr; }
   .macro-overview-row { flex-direction: column; }
   .meal-add-btns { flex-wrap: wrap; }

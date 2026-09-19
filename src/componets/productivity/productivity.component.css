@@ -47,14 +47,71 @@
   flex-shrink: 0;
 }
 
-@media (max-width: 900px) {
+.header-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+@media (max-width: 768px) {
+  .productivity-page {
+    padding: 16px;
+    padding-bottom: 36px !important;
+  }
+
+  /* Do not show descriptions associated with headers on small screen */
+  .header-text p {
+    display: none !important;
+  }
+
   .header-container {
     flex-direction: column;
     align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 16px;
   }
+
   .header-actions {
-    flex-wrap: wrap;
+    flex-direction: column;
     width: 100%;
+    gap: 10px;
+  }
+
+  /* Make date indicator take 100% width */
+  .date-navigator {
+    width: 100% !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    box-sizing: border-box !important;
+  }
+
+  .current-date-pill {
+    flex: 1;
+    text-align: center;
+  }
+
+  /* Put view analytics and edit category in single row */
+  .header-action-btns {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .btn-compare,
+  .btn-edit-categories {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 11.5px !important;
+    padding: 8px 6px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
   }
 }
 

@@ -8,7 +8,8 @@
         type="button"
         class="analytics-tab-btn"
         [class.active]="activeTab === 'discipline'"
-        (click)="setActiveTab('discipline')">
+        (click)="setActiveTab('discipline')"
+        title="Discipline & Habits">
         <span class="tab-icon">📈</span>
         <span class="tab-label">Discipline & Habits</span>
       </button>
@@ -16,7 +17,8 @@
         type="button"
         class="analytics-tab-btn"
         [class.active]="activeTab === 'productivity'"
-        (click)="setActiveTab('productivity')">
+        (click)="setActiveTab('productivity')"
+        title="Productivity & Time">
         <span class="tab-icon">⏱️</span>
         <span class="tab-label">Productivity & Time</span>
       </button>
@@ -24,7 +26,8 @@
         type="button"
         class="analytics-tab-btn"
         [class.active]="activeTab === 'diet'"
-        (click)="setActiveTab('diet')">
+        (click)="setActiveTab('diet')"
+        title="Diet & Nutrition">
         <span class="tab-icon">🥗</span>
         <span class="tab-label">Diet & Nutrition</span>
       </button>
@@ -39,44 +42,74 @@
           class="range-btn"
           [class.active]="timeRange === '7d'"
           (click)="setTimeRange('7d')">
-          Last 7 Days
+          <span class="range-lbl-full">Last 7 Days</span>
+          <span class="range-lbl-short">7D</span>
         </button>
         <button
           type="button"
           class="range-btn"
           [class.active]="timeRange === '30d'"
           (click)="setTimeRange('30d')">
-          Last 30 Days
+          <span class="range-lbl-full">Last 30 Days</span>
+          <span class="range-lbl-short">30D</span>
         </button>
         <button
           type="button"
           class="range-btn"
           [class.active]="timeRange === 'all'"
           (click)="setTimeRange('all')">
-          All Time
+          <span class="range-lbl-full">All Time</span>
+          <span class="range-lbl-short">All</span>
         </button>
       </div>
-      <a routerLink="/home" class="btn-diet-link">Open Habits Tracker ➔</a>
+      <a routerLink="/home" class="btn-diet-link">
+        <span class="link-lbl-full">Open Habits Tracker ➔</span>
+        <span class="link-lbl-short">Habits ➔</span>
+      </a>
     </div>
 
     <!-- When in Productivity Tab -->
     <div class="analytics-top-actions" *ngIf="activeTab === 'productivity'">
       <div class="time-range-picker">
-        <button type="button" class="range-btn" [class.active]="prodRange === '7d'" (click)="setProdRange('7d')">7 Days</button>
-        <button type="button" class="range-btn" [class.active]="prodRange === '14d'" (click)="setProdRange('14d')">14 Days</button>
-        <button type="button" class="range-btn" [class.active]="prodRange === '30d'" (click)="setProdRange('30d')">30 Days</button>
+        <button type="button" class="range-btn" [class.active]="prodRange === '7d'" (click)="setProdRange('7d')">
+          <span class="range-lbl-full">7 Days</span>
+          <span class="range-lbl-short">7D</span>
+        </button>
+        <button type="button" class="range-btn" [class.active]="prodRange === '14d'" (click)="setProdRange('14d')">
+          <span class="range-lbl-full">14 Days</span>
+          <span class="range-lbl-short">14D</span>
+        </button>
+        <button type="button" class="range-btn" [class.active]="prodRange === '30d'" (click)="setProdRange('30d')">
+          <span class="range-lbl-full">30 Days</span>
+          <span class="range-lbl-short">30D</span>
+        </button>
       </div>
-      <!-- <a routerLink="/productivity" class="btn-diet-link">Open Productivity Tracker ➔</a> -->
+      <a routerLink="/productivity" class="btn-diet-link">
+        <span class="link-lbl-full">Open Productivity ➔</span>
+        <span class="link-lbl-short">Time ➔</span>
+      </a>
     </div>
 
     <!-- When in Diet Tab -->
     <div class="analytics-top-actions" *ngIf="activeTab === 'diet'">
       <div class="time-range-picker">
-        <button type="button" class="range-btn" [class.active]="dietRange === '7d'" (click)="setDietRange('7d')">7 Days</button>
-        <button type="button" class="range-btn" [class.active]="dietRange === '14d'" (click)="setDietRange('14d')">14 Days</button>
-        <button type="button" class="range-btn" [class.active]="dietRange === '30d'" (click)="setDietRange('30d')">30 Days</button>
+        <button type="button" class="range-btn" [class.active]="dietRange === '7d'" (click)="setDietRange('7d')">
+          <span class="range-lbl-full">7 Days</span>
+          <span class="range-lbl-short">7D</span>
+        </button>
+        <button type="button" class="range-btn" [class.active]="dietRange === '14d'" (click)="setDietRange('14d')">
+          <span class="range-lbl-full">14 Days</span>
+          <span class="range-lbl-short">14D</span>
+        </button>
+        <button type="button" class="range-btn" [class.active]="dietRange === '30d'" (click)="setDietRange('30d')">
+          <span class="range-lbl-full">30 Days</span>
+          <span class="range-lbl-short">30D</span>
+        </button>
       </div>
-      <!-- <a routerLink="/diet" class="btn-diet-link">Open Diet Tracker ➔</a> -->
+      <a routerLink="/diet" class="btn-diet-link">
+        <span class="link-lbl-full">Open Diet Tracker ➔</span>
+        <span class="link-lbl-short">Diet ➔</span>
+      </a>
     </div>
   </div>
 

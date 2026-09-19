@@ -1,6 +1,8 @@
 .app-shell {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
   background-color: var(--bg-app);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
@@ -87,11 +89,15 @@
   display: flex;
   flex-direction: column;
   min-width: 0;
+  height: 100vh;
+  max-height: 100vh;
+  overflow: hidden;
 }
 
 /* TOPBAR */
 .topbar {
   height: 60px;
+  flex-shrink: 0;
   background: var(--bg-topbar);
   border-bottom: 1px solid var(--border-color);
   display: flex;
@@ -261,6 +267,8 @@
 .content-area {
   flex: 1;
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  min-height: 0;
 }
 
 /* HYDRATION TOAST */
@@ -640,6 +648,97 @@
 }
 
 @media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+    min-height: 100vh;
+    height: auto;
+    overflow-y: visible !important;
+  }
+
+  .sidebar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    height: calc(56px + env(safe-area-inset-bottom, 0px));
+    flex-direction: row;
+    border-right: none;
+    border-top: 1px solid var(--border-color);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    z-index: 1000;
+    background: var(--bg-sidebar);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  .sidebar-header {
+    display: none;
+  }
+
+  .sidebar-nav {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    padding: 4px 8px;
+    gap: 0;
+  }
+
+  .nav-link {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+
+  .main-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    height: auto;
+    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+    overflow-y: visible !important;
+  }
+
+  .content-area {
+    overflow-y: visible !important;
+    height: auto !important;
+  }
+
+  .topbar {
+    padding: env(safe-area-inset-top, 0px) 16px 0;
+    height: calc(54px + env(safe-area-inset-top, 0px));
+    gap: 8px;
+  }
+
+  /* Only on small screen: remove water adder, user name, and logout; keep theme changer and user emoji */
+  .topbar-water-pill {
+    display: none !important;
+  }
+
+  .user-pill .name {
+    display: none !important;
+  }
+
+  .user-pill {
+    padding: 6px 10px;
+    border-radius: 50%;
+    min-width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-logout {
+    display: none !important;
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
   .track-prompt-card {
     padding: 28px 20px 22px;
     max-width: 480px;
@@ -653,6 +752,21 @@
   }
   .prompt-opt-card {
     padding: 16px;
+  }
+}
+
+@media (max-width: 520px) {
+  .topbar {
+    padding: env(safe-area-inset-top, 0px) 12px 0;
+  }
+
+  .app-brand {
+    font-size: 14px;
+  }
+
+  .btn-theme-toggle {
+    width: 36px;
+    height: 36px;
   }
 }
 

@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TaskTrackerService } from '../../services/task-tracker.service';
 import { ModalService } from '../../services/modal.service';
 import { HydrationService, HydrationSettings } from '../../services/hydration.service';
@@ -51,9 +52,24 @@ export class SettingsComponent implements OnInit {
   constructor(
     private tracker: TaskTrackerService,
     private modalService: ModalService,
+    private router: Router,
     public hydrationService: HydrationService,
     public themeService: ThemeService
   ) {}
+
+  async logout() {
+    const confirmed = await this.modalService.confirm(
+      'Sign Out 🚪',
+      'Are you sure you want to log out of your Discipline Tracker session?',
+      'Logout',
+      true
+    );
+
+    if (confirmed) {
+      sessionStorage.removeItem('trackJwt');
+      this.router.navigate(['/login']);
+    }
+  }
 
   selectTheme(theme: ThemeMode) {
     this.themeService.setTheme(theme);

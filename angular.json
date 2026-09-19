@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "task_tracker": {
+    "app": {
       "projectType": "application",
       "schematics": {},
       "root": "",
@@ -43,8 +43,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "1.5MB",
+                  "maximumError": "3MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -66,10 +66,10 @@
           "builder": "@angular-devkit/build-angular:dev-server",
           "configurations": {
             "production": {
-              "buildTarget": "task_tracker:build:production"
+              "buildTarget": "app:build:production"
             },
             "development": {
-              "buildTarget": "task_tracker:build:development"
+              "buildTarget": "app:build:development"
             }
           },
           "defaultConfiguration": "development"

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Discipline Tracker</string>
+    <string name="title_activity_main">Discipline Tracker</string>
+    <string name="package_name">com.discipline.tasktracker</string>
+    <string name="custom_url_scheme">com.discipline.tasktracker</string>
+</resources>

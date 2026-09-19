@@ -19,15 +19,17 @@
         <button type="button" class="btn-today" *ngIf="!isToday()" (click)="setToday()">Today</button>
       </div>
 
-      <!-- Compare Button -->
-      <a routerLink="/analytics" [queryParams]="{ tab: 'productivity' }" class="btn-compare" title="Compare 24h Target Goal vs Actual Daily Schedule in Analytics">
-        📊 View Analytics ➔
-      </a>
+      <div class="header-action-btns">
+        <!-- Compare Button -->
+        <a routerLink="/analytics" [queryParams]="{ tab: 'productivity' }" class="btn-compare" title="Compare 24h Target Goal vs Actual Daily Schedule in Analytics">
+          📊 View Analytics ➔
+        </a>
 
-      <!-- Edit Categories Button -->
-      <button type="button" class="btn-edit-categories" (click)="openCategoryModal()">
-        ⚙️ Edit Categories & Goals
-      </button>
+        <!-- Edit Categories Button -->
+        <button type="button" class="btn-edit-categories" (click)="openCategoryModal()">
+          ⚙️ Edit Categories & Goals
+        </button>
+      </div>
     </div>
   </div>
 

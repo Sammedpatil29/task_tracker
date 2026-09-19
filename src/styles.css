@@ -1,4 +1,14 @@
+/* Ionic Angular Core & Typography CSS (structure.css omitted to prevent body fixed scroll-lock) */
+@import "@ionic/angular/css/core.css";
+@import "@ionic/angular/css/normalize.css";
+@import "@ionic/angular/css/typography.css";
+
 :root {
+  --ion-safe-area-top: env(safe-area-inset-top, 0px);
+  --ion-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --ion-safe-area-left: env(safe-area-inset-left, 0px);
+  --ion-safe-area-right: env(safe-area-inset-right, 0px);
+
   --bg-app: #090d16;
   --bg-sidebar: #0f172a;
   --bg-topbar: #0f172a;
@@ -95,13 +105,57 @@
   box-sizing: border-box;
 }
 
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
 body {
   margin: 0;
+  padding: 0;
+  height: 100%;
   background-color: var(--bg-app);
   color: var(--text-primary);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   -webkit-font-smoothing: antialiased;
   transition: background-color 0.25s ease, color 0.25s ease;
+  position: static !important;
+  width: 100% !important;
+  overflow: hidden;
+}
+
+ion-app,
+app-root,
+app-layout {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden !important;
+  position: relative !important;
+  contain: none !important;
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: auto !important;
+  }
+
+  ion-app,
+  app-root,
+  app-layout {
+    height: auto !important;
+    min-height: 100% !important;
+    overflow-y: visible !important;
+    overflow-x: hidden !important;
+  }
 }
 
 /* Global Analytics Link Button */

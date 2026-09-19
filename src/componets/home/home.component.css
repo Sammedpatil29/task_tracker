@@ -78,6 +78,37 @@
   100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(14, 165, 233, 0); }
 }
 
+.home-action-btns {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-analytics-link {
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  color: #3b82f6;
+  padding: 10px 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  box-sizing: border-box;
+}
+
+.btn-analytics-link:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: #3b82f6;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+}
+
 .btn-primary-action {
   background: var(--accent-gradient);
   color: #ffffff;
@@ -627,12 +658,52 @@
 @media (max-width: 768px) {
   .page-content {
     padding: 16px;
+    padding-bottom: 36px !important;
     gap: 16px;
   }
 
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .header-actions {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* In discipline tracker, action buttons in single row */
+  .home-action-btns {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    width: 100% !important;
+    gap: 8px !important;
+  }
+
+  .home-action-btns .btn-analytics-link,
+  .home-action-btns .btn-primary-action {
+    flex: 1 1 0 !important;
+    min-width: 0 !important;
+    width: 100% !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 11.5px !important;
+    padding: 10px 6px !important;
+    white-space: nowrap !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Do not show descriptions associated with headers on small screen */
+  .page-subtitle,
+  .section-subtitle {
+    display: none !important;
   }
 
   .dashboard-card {

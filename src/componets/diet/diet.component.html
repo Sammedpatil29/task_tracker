@@ -35,10 +35,12 @@
         </div>
         <button class="date-nav-btn" (click)="nextDay()" [disabled]="isToday()">›</button>
       </div>
-      <a routerLink="/analytics" [queryParams]="{ tab: 'diet' }" class="btn-analytics-link" title="View Nutrition & Diet Analytics">
-        📊 View Analytics ➔
-      </a>
-      <button type="button" class="btn-goal" (click)="openGoalModal()">⚙️ Edit Goals</button>
+      <div class="diet-action-btns">
+        <a routerLink="/analytics" [queryParams]="{ tab: 'diet' }" class="btn-analytics-link" title="View Nutrition & Diet Analytics">
+          📊 View Analytics ➔
+        </a>
+        <button type="button" class="btn-goal" (click)="openGoalModal()">⚙️ Edit Goals</button>
+      </div>
     </div>
   </div>
 

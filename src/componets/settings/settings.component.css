@@ -30,8 +30,24 @@
 }
 
 @media (max-width: 768px) {
+  .settings-page {
+    padding: 16px;
+    padding-bottom: 36px !important;
+  }
+
+  /* Do not show descriptions associated with headers on small screen */
+  .header p,
+  .card-desc {
+    display: none !important;
+  }
+
   .settings-container {
     grid-template-columns: 1fr;
+  }
+
+  /* Show logout button inside settings only for small screen */
+  .logout-card {
+    display: flex !important;
   }
 }
 
@@ -473,4 +489,54 @@
 .switch input:disabled + .slider {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* SESSION & LOGOUT CARD - only visible on small screens */
+.logout-card {
+  display: none !important;
+  border: 1.5px solid rgba(239, 68, 68, 0.25);
+  background: var(--bg-card);
+}
+
+.logout-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.btn-settings-logout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  max-width: 240px;
+}
+
+.btn-settings-logout:hover {
+  background: #fca5a5;
+  color: #991b1b;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(220, 38, 38, 0.25);
+}
+
+[data-theme='dark'] .btn-settings-logout {
+  background: rgba(239, 68, 68, 0.14);
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+[data-theme='dark'] .btn-settings-logout:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #fca5a5;
+  border-color: #ef4444;
 }

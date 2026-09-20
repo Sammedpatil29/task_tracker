@@ -1,3 +1,9 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: 100vh;
+}
+
 /* Wrapper */
 .auth-wrapper {
   min-height: 100vh;
@@ -312,5 +318,332 @@ input:focus {
 
 .auth-footer b:hover {
   text-decoration: underline;
+}
+
+/* ========================================================
+   TOP SLIDER / SWIPER (DESKTOP DEFAULT: HIDDEN)
+   ======================================================== */
+.mobile-slider-section {
+  display: none;
+}
+
+.sheet-handle-bar {
+  display: none;
+}
+
+/* ========================================================
+   MOBILE / SMALL SCREENS: TOP SWIPER + BOTTOM LOGIN FORM
+   ======================================================== */
+@media (max-width: 768px) {
+  :host {
+    display: block;
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+  }
+
+  .auth-wrapper {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100%;
+    width: 100%;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    background: var(--bg-app);
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    position: relative;
+    box-sizing: border-box;
+  }
+
+  /* --- Top Swiper Section: Takes Complete Space on Top of Form --- */
+  .mobile-slider-section {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    position: relative;
+    width: 100% !important;
+    height: 56vh !important;
+    height: 56dvh !important;
+    min-height: 350px !important;
+    flex: 1 0 auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden;
+    background: radial-gradient(circle at 75% 20%, rgba(16, 185, 129, 0.22) 0%, rgba(6, 78, 59, 0.1) 45%, var(--bg-app) 100%);
+    z-index: 1;
+  }
+
+  /* Ambient Glows */
+  .ambient-glow {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    filter: blur(80px);
+    z-index: 0;
+  }
+
+  .glow-primary {
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.38) 0%, transparent 70%);
+    top: -50px;
+    left: -70px;
+  }
+
+  .glow-secondary {
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(59, 130, 246, 0.28) 0%, transparent 70%);
+    top: 60px;
+    right: -80px;
+  }
+
+  .ambient-grid-pattern {
+    position: absolute;
+    inset: 0;
+    background-image: 
+      linear-gradient(to right, rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+    mask-image: radial-gradient(ellipse at center, black 45%, transparent 80%);
+  }
+
+  /* Carousel Container (Occupies 100% of top slider section) */
+  .carousel-container {
+    width: 100% !important;
+    height: 100% !important;
+    flex: 1 1 auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 2;
+    position: relative;
+    padding-bottom: 24px;
+    box-sizing: border-box;
+  }
+
+  .login-swiper {
+    width: 100% !important;
+    height: 100% !important;
+    display: block !important;
+    --swiper-pagination-color: var(--accent-primary, #10b981);
+    --swiper-pagination-bullet-inactive-color: rgba(255, 255, 255, 0.35);
+    --swiper-pagination-bullet-inactive-opacity: 0.7;
+    --swiper-pagination-bullet-size: 7px;
+    --swiper-pagination-bullet-horizontal-gap: 6px;
+    --swiper-pagination-bottom: 8px;
+  }
+
+  .login-swiper::part(bullet) {
+    width: 7px;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 99px;
+    transition: all 0.3s ease;
+  }
+
+  .login-swiper::part(bullet-active) {
+    width: 22px;
+    height: 7px;
+    background: var(--accent-primary, #10b981);
+    border-radius: 99px;
+  }
+
+  swiper-slide {
+    width: 100% !important;
+    height: 100% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+  }
+
+  .slide-card {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    text-align: center !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    height: 100% !important;
+    padding: calc(env(safe-area-inset-top, 0px) + 16px) 20px 20px 20px !important;
+    margin: auto !important;
+    box-sizing: border-box !important;
+  }
+
+  .slide-badge {
+    font-size: 11.5px;
+    font-weight: 800;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+    padding: 4px 13px;
+    border-radius: 99px;
+    margin-bottom: 12px;
+    display: inline-flex;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  }
+
+  .slide-hero-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 78px;
+    height: 78px;
+    margin-bottom: 12px;
+  }
+
+  .hero-halo {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(16, 185, 129, 0.4) 0%, transparent 70%);
+    filter: blur(14px);
+  }
+
+  .hero-icon {
+    font-size: 50px;
+    position: relative;
+    z-index: 1;
+    filter: drop-shadow(0 6px 16px rgba(0, 0, 0, 0.4));
+  }
+
+  .slide-title {
+    font-size: 21px;
+    font-weight: 800;
+    line-height: 1.25;
+    margin: 0 0 6px 0;
+    color: var(--text-primary);
+    letter-spacing: -0.3px;
+  }
+
+  .highlight-text {
+    background: linear-gradient(135deg, var(--accent-primary, #10b981) 0%, #34d399 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .slide-desc {
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--text-muted);
+    max-width: 320px;
+    margin: 0 0 14px 0;
+  }
+
+  .chips-row {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 330px;
+  }
+
+  .feature-chip {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 11px;
+    border-radius: 99px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-secondary);
+    backdrop-filter: blur(8px);
+  }
+
+  .slider-bottom-fade {
+    display: block !important;
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 24px;
+    background: linear-gradient(to bottom, transparent 0%, rgba(9, 13, 22, 0.45) 100%);
+    pointer-events: none;
+    z-index: 4;
+  }
+
+  /* --- Bottom Login Form Section (Seamless Bottom Sheet) --- */
+  .auth-card {
+    flex: 1 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 44vh !important;
+    min-height: 44dvh !important;
+    margin: 0 !important;
+    margin-top: 0 !important;
+    border-radius: 28px 28px 0 0 !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-top: 1px solid var(--border-color) !important;
+    background: var(--bg-card) !important;
+    padding: 16px 22px calc(22px + env(safe-area-inset-bottom, 0px)) 22px !important;
+    box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.35) !important;
+    box-sizing: border-box;
+    z-index: 10;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+
+  .sheet-handle-bar {
+    display: block !important;
+    width: 38px;
+    height: 4px;
+    border-radius: 99px;
+    background: var(--border-color);
+    opacity: 0.8;
+    margin: 0 auto 12px auto;
+    flex-shrink: 0;
+  }
+
+  .auth-header {
+    margin-bottom: 14px !important;
+  }
+
+  .auth-header h1 {
+    font-size: 20px !important;
+  }
+
+  .auth-header p {
+    font-size: 12.5px !important;
+    margin-top: 3px !important;
+  }
+
+  .form-field {
+    margin-bottom: 10px !important;
+  }
+
+  input {
+    padding: 11px 14px !important;
+    font-size: 14px !important;
+    border-radius: 11px !important;
+  }
+
+  .btn-submit {
+    padding: 12px !important;
+    font-size: 14.5px !important;
+    border-radius: 11px !important;
+    margin-top: 4px !important;
+  }
+
+  .auth-footer {
+    margin-top: 12px !important;
+    font-size: 12.5px !important;
+  }
 }
 

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, OnDestroy, Output, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,10 +6,25 @@ import { TaskTrackerService } from '../../services/task-tracker.service';
 import { ModalService } from '../../services/modal.service';
 import { ThemeService } from '../../services/theme.service';
 import { ModalComponent } from '../modal/modal.component';
+import { register } from 'swiper/element/bundle';
+
+register();
+
+export interface OnboardingSlide {
+  badge: string;
+  badgeBg: string;
+  badgeColor: string;
+  icon: string;
+  title: string;
+  highlight: string;
+  subtitle: string;
+  chips: string[];
+}
 
 @Component({
   selector: 'app-login',
   standalone: true,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   imports: [FormsModule, CommonModule, ModalComponent],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
@@ -17,6 +32,49 @@ import { ModalComponent } from '../modal/modal.component';
 export class LoginComponent implements OnInit, OnDestroy {
   @Output() isLoggedIn: EventEmitter<boolean> = new EventEmitter<boolean>();
   mode: 'login' | 'signup' | 'forgot' = 'login';
+
+  onboardingSlides: OnboardingSlide[] = [
+    {
+      badge: '🔥 HABITS & DISCIPLINE',
+      badgeBg: 'rgba(16, 185, 129, 0.15)',
+      badgeColor: '#10b981',
+      icon: '🔥',
+      title: 'Master Your Habits,',
+      highlight: 'Build Daily Streaks',
+      subtitle: 'Track unbroken daily consistency, check off non-negotiables, and unlock consistency badges.',
+      chips: ['⚡ Daily Streaks', '🎯 Matrix View', '🏆 Achievements']
+    },
+    {
+      badge: '⏱️ 24H PRODUCTIVITY',
+      badgeBg: 'rgba(59, 130, 246, 0.15)',
+      badgeColor: '#3b82f6',
+      icon: '⏱️',
+      title: 'Take Back Your Time,',
+      highlight: 'Work vs Recovery',
+      subtitle: 'Log time intervals, categorize deep focus sessions, and balance your 24-hour day.',
+      chips: ['⏱️ Interval Logger', '📊 24h Breakdown', '🧠 Deep Focus']
+    },
+    {
+      badge: '🥗 DIET & HYDRATION',
+      badgeBg: 'rgba(245, 158, 11, 0.15)',
+      badgeColor: '#f59e0b',
+      icon: '🥗',
+      title: 'Fuel Peak Performance,',
+      highlight: 'Calories & Hydration',
+      subtitle: 'Precision calorie and macro tracking with customizable hydration interval alerts.',
+      chips: ['🥗 Macro Targets', '💧 Water Reminders', '⚡ Energy Tracking']
+    },
+    {
+      badge: '📈 UNIFIED ANALYTICS',
+      badgeBg: 'rgba(139, 92, 246, 0.15)',
+      badgeColor: '#a855f7',
+      icon: '📈',
+      title: 'Complete Growth Insights,',
+      highlight: 'All in One Place',
+      subtitle: 'Gain clarity into your progress with comprehensive cross-discipline performance metrics.',
+      chips: ['📊 Consistency Matrix', '🌱 Growth Metrics', '🔒 100% Private']
+    }
+  ];
 
   // Login credentials
   loginEmail = '';

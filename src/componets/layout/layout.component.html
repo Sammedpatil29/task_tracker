@@ -42,6 +42,25 @@
           </button>
         </div>
 
+        <!-- Premium Status Badge (1-Ad-Per-Day System) -->
+        <button
+          type="button"
+          class="topbar-premium-pill"
+          [class.premium-active]="premiumService.isPremium$ | async"
+          [class.premium-expired]="!(premiumService.isPremium$ | async)"
+          (click)="premiumService.openAdModal()"
+          [title]="(premiumService.isPremium$ | async) ? ('Premium Active: ' + (premiumService.remainingFormatted$ | async) + ' remaining. Click for info.') : 'Free Pass: Watch 1 ad to unlock 24h access!'">
+          <span class="premium-crown-icon">{{ (premiumService.isPremium$ | async) ? '👑' : '🔒' }}</span>
+          <span class="premium-label">
+            <ng-container *ngIf="premiumService.isPremium$ | async">
+              <strong>Premium</strong> <span class="premium-time">{{ premiumService.remainingFormatted$ | async }}</span>
+            </ng-container>
+            <ng-container *ngIf="!(premiumService.isPremium$ | async)">
+              <strong>Unlock Day</strong>
+            </ng-container>
+          </span>
+        </button>
+
         <!-- Theme Toggle Button -->
         <button
           class="btn-theme-toggle"
@@ -131,4 +150,5 @@
 
   <!-- GLOBAL MODAL & PROMPTS -->
   <app-modal></app-modal>
+  <app-premium-modal></app-premium-modal>
 </div>

@@ -6,6 +6,8 @@ import { ModalService } from '../../services/modal.service';
 import { ModalComponent } from '../modal/modal.component';
 import { HydrationService } from '../../services/hydration.service';
 import { ThemeService } from '../../services/theme.service';
+import { PremiumService } from '../../services/premium.service';
+import { PremiumModalComponent } from '../premium-modal/premium-modal.component';
 
 export interface TrackOption {
   id: string;
@@ -20,7 +22,7 @@ export interface TrackOption {
 
 @Component({
   selector: 'app-layout',
-  imports: [CommonModule, RouterModule, ModalComponent],
+  imports: [CommonModule, RouterModule, ModalComponent, PremiumModalComponent],
   templateUrl: './layout.component.html',
   styleUrl: './layout.component.css'
 })
@@ -79,7 +81,8 @@ export class LayoutComponent implements OnInit, OnDestroy {
     public tracker: TaskTrackerService,
     private modalService: ModalService,
     public hydrationService: HydrationService,
-    public themeService: ThemeService
+    public themeService: ThemeService,
+    public premiumService: PremiumService
   ) {}
 
   toggleTheme() {
@@ -87,7 +90,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const token = sessionStorage.getItem('trackJwt');
+    const token = this.tracker.getToken();
     if (!token) {
       this.router.navigate(['/login']);
       return;
@@ -95,6 +98,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     this.loadUserData();
     this.tracker.loadTodayWater();
+
+    // Enforce 1-Ad-Per-Day Premium Access Check
+    this.premiumService.enforceAccessCheck();
 
     // Check if we should prompt on initial app load / login
     this.checkPromptTrigger();

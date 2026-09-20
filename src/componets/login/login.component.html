@@ -1,6 +1,51 @@
 <div class="auth-wrapper">
 
+  <!-- ================= TOP SLIDER SECTION (Mobile Screens) ================= -->
+  <div class="mobile-slider-section">
+    <div class="ambient-glow glow-primary"></div>
+    <div class="ambient-glow glow-secondary"></div>
+    <div class="ambient-grid-pattern"></div>
+
+    <div class="carousel-container">
+      <swiper-container
+        autoplay='{"delay": 3800, "disableOnInteraction": false}'
+        loop="true"
+        pagination="true"
+        observer="true"
+        observe-parents="true"
+        class="login-swiper"
+        style="width: 100%; height: 100%; display: block;">
+        <swiper-slide *ngFor="let slide of onboardingSlides">
+          <div class="slide-card">
+            <div class="slide-badge" [style.background]="slide.badgeBg" [style.color]="slide.badgeColor">
+              {{ slide.badge }}
+            </div>
+
+            <div class="slide-hero-visual">
+              <div class="hero-halo"></div>
+              <span class="hero-icon">{{ slide.icon }}</span>
+            </div>
+
+            <h2 class="slide-title">
+              {{ slide.title }}<br />
+              <span class="highlight-text">{{ slide.highlight }}</span>
+            </h2>
+
+            <p class="slide-desc">{{ slide.subtitle }}</p>
+
+            <div class="chips-row">
+              <span class="feature-chip" *ngFor="let chip of slide.chips">{{ chip }}</span>
+            </div>
+          </div>
+        </swiper-slide>
+      </swiper-container>
+    </div>
+
+    <div class="slider-bottom-fade"></div>
+  </div>
+
   <div class="auth-card">
+    <div class="sheet-handle-bar"></div>
 
     <!-- Header -->
     <div class="auth-header">
@@ -272,6 +317,6 @@
     </div>
 
   </div>
-
-  <app-modal></app-modal>
 </div>
+
+<app-modal></app-modal>

@@ -1,0 +1,112 @@
+<!-- UNCLOSABLE DAILY AD UNLOCK DIALOG -->
+<div
+  class="premium-modal-backdrop"
+  *ngIf="premiumService.isAdModalOpen$ | async"
+  (click)="onBackdropClick()">
+
+  <div
+    class="premium-modal-card"
+    [class.shake-animation]="isShaking"
+    (click)="$event.stopPropagation()">
+
+    <!-- Ambient Glow Behind Glass -->
+    <div class="card-ambient-glow"></div>
+
+    <!-- STATE 1: STANDARD AD UNLOCK PROMPT -->
+    <div *ngIf="!(premiumService.isAdPlaying$ | async) && !(premiumService.rewardGrantedAlert$ | async)" class="prompt-content">
+      <div class="crown-badge-stage">
+        <div class="crown-halo"></div>
+        <span class="crown-icon">👑</span>
+      </div>
+
+      <div class="badge-pill">1 AD = 1 DAY PASS</div>
+
+      <h2 class="modal-title">Unlock Daily Access</h2>
+      <p class="modal-subtitle">
+        Watch <strong>1 short sponsor video</strong> to unlock full 24-hour access to all your habits, productivity candles, and diet logs.
+      </p>
+
+      <!-- Value Props List -->
+      <div class="perks-list">
+        <div class="perk-item">
+          <span class="perk-icon">⚡</span>
+          <div class="perk-info">
+            <strong>24-Hour Premium Access</strong>
+            <span>Enjoy uninterrupted tracking all day long</span>
+          </div>
+        </div>
+        <div class="perk-item">
+          <span class="perk-icon">🔥</span>
+          <div class="perk-info">
+            <strong>Habit Streaks &amp; Matrix View</strong>
+            <span>Never break your consistency chain</span>
+          </div>
+        </div>
+        <div class="perk-item">
+          <span class="perk-icon">⏱️</span>
+          <div class="perk-info">
+            <strong>Productivity &amp; Diet Tracking</strong>
+            <span>Full interval logs and nutrition analytics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mandatory Watch Action Button -->
+      <button
+        type="button"
+        class="btn-watch-ad"
+        [disabled]="(admobService.isAdLoading$ | async) || (premiumService.isClaimingReward$ | async)"
+        (click)="watchAd()">
+        <span *ngIf="!(admobService.isAdLoading$ | async)">Watch Ad to Unlock (1 Day Free) 🎬</span>
+        <span *ngIf="(admobService.isAdLoading$ | async)">Preparing Sponsor Video... ⏳</span>
+      </button>
+
+      <p class="lock-notice">
+        🔒 <span>Daily ad required to proceed into app</span>
+      </p>
+    </div>
+
+    <!-- STATE 2: INTERACTIVE SPONSOR VIDEO COUNTDOWN PLAYER -->
+    <div *ngIf="(premiumService.isAdPlaying$ | async)" class="video-player-stage">
+      <div class="ad-video-screen">
+        <div class="video-ambient-mesh"></div>
+        <div class="ad-sponsor-label">📺 Sponsor Video</div>
+
+        <div class="countdown-circle">
+          <div class="countdown-number">{{ premiumService.adCountdown$ | async }}s</div>
+          <div class="countdown-hint">Reward in {{ premiumService.adCountdown$ | async }} seconds</div>
+        </div>
+
+        <div class="ad-mock-brand">
+          <span class="brand-sparkle">✨</span>
+          <h3>Discipline Tracker Pro</h3>
+          <p>Master Your Focus &amp; Build Unstoppable Momentum</p>
+        </div>
+
+        <div class="progress-bar-container">
+          <div
+            class="progress-bar-fill"
+            [style.width.%]="(10 - (premiumService.adCountdown$ | async)!) * 10">
+          </div>
+        </div>
+      </div>
+
+      <p class="watching-hint">Please watch until the timer finishes to earn your 24h pass...</p>
+    </div>
+
+    <!-- STATE 3: REWARD GRANTED CELEBRATION -->
+    <div *ngIf="(premiumService.rewardGrantedAlert$ | async)" class="reward-celebration-stage">
+      <div class="celebration-badge">🎉</div>
+      <h2 class="celebration-title">1-Day Premium Unlocked!</h2>
+      <p class="celebration-subtitle">
+        You have earned <strong>24 hours of full access</strong>. Enjoy mastering your discipline today!
+      </p>
+      <div class="unlock-checkmark">
+        <span>✓ Full Access Granted</span>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+

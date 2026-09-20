@@ -135,6 +135,54 @@ async function main() {
   console.log(`• Download URL: ${manifest.url}`);
   console.log(`• Policy:       ${forceImmediate ? 'Immediate Reload' : 'Auto Reload on Staging'}`);
   console.log(`----------------------------------------\n`);
+
+  // 5. Direct Upload to Remote Server
+  if (!skipUpload) {
+    console.log(`📡 Step 5/5: Uploading bundle & manifest directly to server: ${REMOTE_API_URL}...`);
+    try {
+      const formData = new FormData();
+      const fileBuffer = fs.readFileSync(bundlePath);
+      const blob = new Blob([fileBuffer], { type: 'application/zip' });
+
+      formData.append('file', blob, bundleFileName);
+      formData.append('manifest', JSON.stringify(manifest));
+      formData.append('appId', APP_ID);
+      formData.append('channel', CHANNEL);
+      formData.append('runtime', RUNTIME);
+      formData.append('version', version);
+      formData.append('forceImmediate', String(forceImmediate));
+
+      const uploadUrl = `${REMOTE_API_URL}/api/ota/upload-bundle`;
+      const res = await fetch(uploadUrl, {
+        method: 'POST',
+        headers: {
+          'x-ota-secret': OTA_SECRET_KEY,
+          'x-forwarded-proto': 'https'
+        },
+        body: formData
+      });
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        console.warn(`⚠️  Remote server upload returned status ${res.status}: ${errorText}`);
+        console.log(`ℹ️  Local copy remains saved in ${bundlePath}`);
+      } else {
+        const resData = await res.json();
+        console.log(`\n🎉 REMOTE SERVER UPLOAD COMPLETED!`);
+        console.log(`----------------------------------------`);
+        console.log(`• Remote Status:   ${resData.message}`);
+        console.log(`• Remote Bundle:   ${resData.bundleUrl}`);
+        console.log(`• Remote Manifest: ${resData.manifestUrl}`);
+        console.log(`• Ready for Apps:  INSTANTLY LIVE (No git commit or deploy needed!)`);
+        console.log(`----------------------------------------\n`);
+      }
+    } catch (uploadErr) {
+      console.warn(`\n⚠️  Could not connect to remote server for direct upload: ${uploadErr.message}`);
+      console.log(`ℹ️  Local bundle and manifest were saved successfully to ${OTA_PUBLIC_DIR}.`);
+    }
+  } else {
+    console.log(`⏩ Step 5/5: Skipped remote upload (--no-upload requested)`);
+  }
 }
 
 main().catch(err => {

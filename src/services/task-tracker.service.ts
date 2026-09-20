@@ -16,6 +16,57 @@ export class TaskTrackerService {
 
   constructor(private http: HttpClient) {}
 
+  // ===================== TOKEN MANAGEMENT (LOCALSTORAGE) ===================== //
+
+  getToken(): string | null {
+    const token = localStorage.getItem('trackJwt') || sessionStorage.getItem('trackJwt');
+    if (token && !localStorage.getItem('trackJwt')) {
+      localStorage.setItem('trackJwt', token);
+    }
+    return token;
+  }
+
+  setToken(token: string): void {
+    if (token) {
+      localStorage.setItem('trackJwt', token);
+      sessionStorage.setItem('trackJwt', token);
+    }
+  }
+
+  removeToken(): void {
+    localStorage.removeItem('trackJwt');
+    sessionStorage.removeItem('trackJwt');
+    sessionStorage.removeItem('justLoggedIn');
+  }
+
+  isTokenValid(): boolean {
+    const token = this.getToken();
+    if (!token || token.trim() === '') return false;
+    const parts = token.split('.');
+    if (parts.length !== 3) {
+      this.removeToken();
+      return false;
+    }
+    try {
+      const payload = JSON.parse(atob(parts[1]));
+      if (payload.exp && payload.exp * 1000 <= Date.now()) {
+        this.removeToken();
+        return false;
+      }
+      return true;
+    } catch {
+      this.removeToken();
+      return false;
+    }
+  }
+
+  getAuthHeaders(): HttpHeaders {
+    const token = this.getToken() || '';
+    return new HttpHeaders({
+      'Authorization': `Bearer ${token}`
+    });
+  }
+
   // key = taskId_date
   store = new Map<string, boolean>();
 
@@ -74,78 +125,54 @@ export class TaskTrackerService {
   }
 
   getDashboard() {
-    const token = sessionStorage.getItem('trackJwt'); 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.get(this.url + 'api/dashboard', { headers });
   }
 
   updateProfile(data: { name?: string; emoji?: string }) {
-    const token = sessionStorage.getItem('trackJwt'); 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.put(this.url + 'api/user/profile', data, { headers });
   }
 
   updateHydrationSettings(data: { enabled?: boolean; soundEnabled?: boolean; intervalMinutes?: number }) {
-    const token = sessionStorage.getItem('trackJwt'); 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.put(this.url + 'api/user/hydration', data, { headers });
   }
 
   addTask(data: any) {
-    const token = sessionStorage.getItem('trackJwt'); 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.post(this.url + 'api/tasks', data, { headers });
   }
 
   toggleTaskStatus(taskId: number) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.patch(this.url + `api/tasks/${taskId}/toggle`, {}, { headers });
   }
 
   deleteTask(taskId: number) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.delete(this.url + `api/tasks/${taskId}`, { headers });
   }
 
   completions(data: any) {
-    const token = sessionStorage.getItem('trackJwt'); 
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`
-    });
+    const headers = this.getAuthHeaders();
     return this.http.post(this.url + 'api/completions', data, { headers });
   }
 
   // ===================== PRODUCTIVITY TRACKER ===================== //
 
   getProductivityCategories() {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.get(this.url + 'api/productivity/categories', { headers });
   }
 
   saveProductivityCategories(categories: any[]) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.post(this.url + 'api/productivity/categories/bulk', { categories }, { headers });
   }
 
   getActivityLogs(params: string | { startDate: string; endDate: string }) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     const query = typeof params === 'string'
       ? `date=${params}`
       : `startDate=${params.startDate}&endDate=${params.endDate}`;
@@ -153,22 +180,19 @@ export class TaskTrackerService {
   }
 
   addActivityLog(data: { title: string; date: string; startTime: string; endTime: string; categoryId: number | null }) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.post(this.url + 'api/productivity/logs', data, { headers });
   }
 
   deleteActivityLog(id: number) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.delete(this.url + `api/productivity/logs/${id}`, { headers });
   }
 
   // ===================== DIET TRACKER ===================== //
 
   getDietGoal() {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.get(this.url + 'api/diet/goal', { headers });
   }
 
@@ -177,14 +201,12 @@ export class TaskTrackerService {
     fatG: number; fiberG: number; waterMl: number;
   }) {
     if (goal.waterMl) this.waterGoal$.next(goal.waterMl);
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.post(this.url + 'api/diet/goal', goal, { headers });
   }
 
   getMealLogs(params: string | { startDate: string; endDate: string }) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     const query = typeof params === 'string'
       ? `date=${params}`
       : `startDate=${params.startDate}&endDate=${params.endDate}`;
@@ -196,26 +218,22 @@ export class TaskTrackerService {
     calories: number; proteinG?: number; carbsG?: number;
     fatG?: number; fiberG?: number; notes?: string;
   }) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.post(this.url + 'api/diet/logs', data, { headers });
   }
 
   updateMealLog(id: number, data: any) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.put(this.url + `api/diet/logs/${id}`, data, { headers });
   }
 
   deleteMealLog(id: number) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.delete(this.url + `api/diet/logs/${id}`, { headers });
   }
 
   getDietSummary(startDate: string, endDate: string) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.get<any>(this.url + `api/diet/summary?startDate=${startDate}&endDate=${endDate}`, { headers });
   }
 
@@ -233,7 +251,7 @@ export class TaskTrackerService {
   }
 
   loadTodayWater() {
-    const token = sessionStorage.getItem('trackJwt');
+    const token = this.getToken();
     if (!token) return;
     const today = this.getTodayDateStr();
     this.getWaterLog(today).subscribe({
@@ -270,14 +288,12 @@ export class TaskTrackerService {
   }
 
   getWaterLog(date: string) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.get<{ date: string; amountMl: number }>(this.url + `api/diet/water?date=${date}`, { headers });
   }
 
   updateWaterLog(payload: { date: string; delta?: number; amountMl?: number }) {
-    const token = sessionStorage.getItem('trackJwt');
-    const headers = new HttpHeaders({ 'Authorization': `Bearer ${token}` });
+    const headers = this.getAuthHeaders();
     return this.http.post<{ date: string; amountMl: number }>(this.url + 'api/diet/water', payload, { headers })
       .pipe(
         tap((res) => {

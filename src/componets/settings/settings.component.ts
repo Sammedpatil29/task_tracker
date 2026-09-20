@@ -66,7 +66,7 @@ export class SettingsComponent implements OnInit {
     );
 
     if (confirmed) {
-      sessionStorage.removeItem('trackJwt');
+      this.tracker.removeToken();
       this.router.navigate(['/login']);
     }
   }

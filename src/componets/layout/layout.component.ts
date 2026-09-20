@@ -205,7 +205,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
       },
       error: (err) => {
         if (err.status === 401) {
-          sessionStorage.removeItem('trackJwt');
+          this.tracker.removeToken();
           this.router.navigate(['/login']);
         }
       }
@@ -221,7 +221,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
     );
 
     if (confirmed) {
-      sessionStorage.removeItem('trackJwt');
+      this.tracker.removeToken();
       this.router.navigate(['/login']);
     }
   }

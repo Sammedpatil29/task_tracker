@@ -66,6 +66,10 @@ export class LoginComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit() {
+    if (this.taskTrackerService.isTokenValid()) {
+      this.router.navigate(['/analytics']);
+      return;
+    }
     this.emoji = this.emojis[Math.floor(Math.random() * this.emojis.length)];
     this.userEmoji = this.emojisSignup[Math.floor(Math.random() * this.emojisSignup.length)];
   }
@@ -148,7 +152,7 @@ export class LoginComponent implements OnInit, OnDestroy {
       const loginData = { email, password };
       this.taskTrackerService.loginUser(loginData).subscribe({
         next: (response: any) => {
-          sessionStorage.setItem('trackJwt', response['token']);
+          this.taskTrackerService.setToken(response['token']);
           sessionStorage.setItem('justLoggedIn', 'true');
           this.isLoggedIn.emit(true);
           this.loading = false;
@@ -230,7 +234,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
     this.taskTrackerService.registerUser(signupData).subscribe({
       next: (response: any) => {
-        sessionStorage.setItem('trackJwt', response['token']);
+        this.taskTrackerService.setToken(response['token']);
         sessionStorage.setItem('justLoggedIn', 'true');
         this.isLoggedIn.emit(true);
         this.loading = false;

@@ -702,13 +702,14 @@
     width: 100%;
     min-height: 100vh;
     height: auto;
-    padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
     overflow-y: visible !important;
   }
 
   .content-area {
     overflow-y: visible !important;
     height: auto !important;
+    padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   .topbar {

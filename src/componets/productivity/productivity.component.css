@@ -56,7 +56,7 @@
 @media (max-width: 768px) {
   .productivity-page {
     padding: 16px;
-    padding-bottom: 36px !important;
+    padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Do not show descriptions associated with headers on small screen */

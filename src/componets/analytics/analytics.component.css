@@ -2140,7 +2140,8 @@
   }
 
   .analytics-page {
-    padding-bottom: 36px !important;
+    padding: 15px;
+    padding-bottom: calc(48px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
 

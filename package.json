@@ -1,6 +1,6 @@
 {
   "name": "task-tracker",
-  "version": "0.0.0",
+  "version": "0.0.5",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
@@ -9,7 +9,9 @@
     "test": "ng test",
     "android:sync": "npx cap sync android",
     "android:build": "ng build && npx cap sync android",
-    "android:open": "npx cap open android"
+    "android:open": "npx cap open android",
+    "ota:publish": "node scripts/publish-ota.mjs",
+    "ota:publish:quick": "node scripts/publish-ota.mjs --skip-build"
   },
   "private": true,
   "dependencies": {
@@ -23,6 +25,7 @@
     "@capacitor/android": "^8.5.2",
     "@capacitor/core": "^8.5.2",
     "@ionic/angular": "^9.0.4",
+    "@otakit/capacitor-updater": "^2.3.3",
     "ionicons": "^8.1.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
@@ -35,6 +38,7 @@
     "@capacitor/cli": "^8.5.2",
     "@ionic/cli": "^7.2.1",
     "@types/jasmine": "~5.1.0",
+    "archiver": "^8.0.0",
     "jasmine-core": "~5.6.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",

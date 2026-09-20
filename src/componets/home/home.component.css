@@ -657,23 +657,28 @@
 
 @media (max-width: 768px) {
   .page-content {
-    padding: 16px;
-    padding-bottom: 36px !important;
-    gap: 16px;
+    padding: 10px 10px calc(48px + env(safe-area-inset-bottom, 0px)) 10px !important;
+    gap: 12px !important;
   }
 
   .dashboard-header {
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    gap: 12px;
+    gap: 8px !important;
+    padding-bottom: 0 !important;
+  }
+
+  .page-title {
+    font-size: 19px !important;
+    letter-spacing: -0.3px;
   }
 
   .header-actions {
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 8px !important;
   }
 
   /* In discipline tracker, action buttons in single row */
@@ -707,11 +712,19 @@
   }
 
   .dashboard-card {
-    padding: 16px;
+    padding: 12px 10px !important;
+    border-radius: 12px !important;
+    gap: 12px !important;
   }
 
   .kpi-grid {
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .kpi-card {
+    padding: 10px 12px !important;
+    border-radius: 12px !important;
+    gap: 4px !important;
   }
 }

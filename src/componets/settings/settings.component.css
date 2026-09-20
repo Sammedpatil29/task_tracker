@@ -18,21 +18,15 @@
 
 .settings-container {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 24px;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
   align-items: stretch;
-}
-
-@media (max-width: 1024px) {
-  .settings-container {
-    grid-template-columns: 1fr;
-  }
 }
 
 @media (max-width: 768px) {
   .settings-page {
     padding: 16px;
-    padding-bottom: 36px !important;
+    padding-bottom: calc(70px + env(safe-area-inset-bottom, 0px)) !important;
   }
 
   /* Do not show descriptions associated with headers on small screen */
@@ -491,18 +485,11 @@
   cursor: not-allowed;
 }
 
-/* SESSION & LOGOUT CARD - completely removed on web / desktop */
+/* SESSION & LOGOUT CARD */
 .logout-card {
-  display: none !important;
+  display: flex;
   border: 1.5px solid rgba(239, 68, 68, 0.25);
   background: var(--bg-card);
-}
-
-@media (min-width: 769px) {
-  .logout-card,
-  .settings-card.logout-card {
-    display: none !important;
-  }
 }
 
 .logout-card-content {

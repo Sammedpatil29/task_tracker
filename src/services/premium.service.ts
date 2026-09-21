@@ -61,6 +61,12 @@ export class PremiumService {
     }, 800);
   }
 
+  private getEndpoint(endpoint: string): string {
+    const base = (environment.apiUrl || '').replace(/\/+$/, '');
+    const cleanPath = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    return `${base}${cleanPath}`;
+  }
+
   /**
    * Load stored expiry from localStorage and evaluate initial status
    */
@@ -117,23 +123,27 @@ export class PremiumService {
   }
 
   /**
-   * Explicitly check status and enforce dialog if not unlocked
+   * Explicitly check status on app start and enforce modal if not active
    */
   public async enforceAccessCheck(): Promise<void> {
-    // If premium is already active locally, keep modal closed
-    if (this.isPremium$.value) {
+    if (!this.trackerService.isTokenValid()) {
       this.isAdModalOpen$.next(false);
       return;
     }
 
-    // Try syncing with backend first if user has a token
-    if (this.trackerService.isTokenValid()) {
-      await this.syncWithBackend().catch(() => {});
+    // Always check real-time status from backend on app start
+    try {
+      await this.syncWithBackend();
+    } catch (e) {
+      console.warn('⚠️ [Premium] App start sync notice:', e);
+      this.evaluateStatus();
     }
 
-    // Only if premium is still expired/inactive, open modal
-    if (!this.isPremium$.value && this.trackerService.isTokenValid()) {
+    // If premium is not active, immediately show modal to watch ad
+    if (!this.isPremium$.value) {
       this.isAdModalOpen$.next(true);
+    } else {
+      this.isAdModalOpen$.next(false);
     }
   }
 
@@ -224,7 +234,7 @@ export class PremiumService {
       if (this.trackerService.isTokenValid()) {
         const headers = this.trackerService.getAuthHeaders();
         const res: any = await firstValueFrom(
-          this.http.post(`${environment.apiUrl}/user/claim-ad-reward`, {}, { headers })
+          this.http.post(this.getEndpoint('/api/user/claim-ad-reward'), {}, { headers })
         );
         if (res?.premiumUntil) {
           const remoteExpiry = new Date(res.premiumUntil).getTime();
@@ -256,21 +266,24 @@ export class PremiumService {
     try {
       const headers = this.trackerService.getAuthHeaders();
       const res: any = await firstValueFrom(
-        this.http.get(`${environment.apiUrl}/user/premium-status`, { headers })
+        this.http.get(this.getEndpoint('/api/user/premium-status'), { headers })
       );
 
-      if (res?.success && res.premiumUntil) {
-        const remoteExpiry = new Date(res.premiumUntil).getTime();
-        const localExpiry = this.premiumUntil$.value || 0;
-
-        // Keep the latest timestamp
-        const finalExpiry = Math.max(localExpiry, remoteExpiry);
-        localStorage.setItem(this.STORAGE_KEY, finalExpiry.toString());
-        this.premiumUntil$.next(finalExpiry);
+      if (res?.success) {
+        if (res.isPremium && res.premiumUntil) {
+          const remoteExpiry = new Date(res.premiumUntil).getTime();
+          localStorage.setItem(this.STORAGE_KEY, remoteExpiry.toString());
+          this.premiumUntil$.next(remoteExpiry);
+        } else {
+          // Backend says NOT premium (expired or not yet unlocked)
+          localStorage.removeItem(this.STORAGE_KEY);
+          this.premiumUntil$.next(null);
+        }
       }
       this.evaluateStatus();
     } catch (err) {
       console.warn('⚠️ [Premium] Status sync error:', err);
+      this.evaluateStatus();
     }
   }
 }

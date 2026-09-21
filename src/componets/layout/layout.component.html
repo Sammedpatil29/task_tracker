@@ -48,8 +48,7 @@
           class="topbar-premium-pill"
           [class.premium-active]="premiumService.isPremium$ | async"
           [class.premium-expired]="!(premiumService.isPremium$ | async)"
-          (click)="premiumService.openAdModal()"
-          [title]="(premiumService.isPremium$ | async) ? ('Premium Active: ' + (premiumService.remainingFormatted$ | async) + ' remaining. Click for info.') : 'Free Pass: Watch 1 ad to unlock 24h access!'">
+          (click)="onPremiumBadgeClick()"
           [title]="(premiumService.isPremium$ | async) ? ('Premium Active: ' + (premiumService.remainingFormatted$ | async) + ' remaining') : 'Free Pass: Watch 1 ad to unlock 24h access!'">
           <span class="premium-crown-icon">{{ (premiumService.isPremium$ | async) ? '👑' : '🔒' }}</span>
           <span class="premium-label">

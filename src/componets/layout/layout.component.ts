@@ -89,6 +89,29 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.themeService.toggleTheme();
   }
 
+  async onPremiumBadgeClick() {
+    this.premiumService.evaluateStatus();
+
+    if (this.premiumService.isPremium$.value) {
+      const remaining = this.premiumService.remainingFormatted$.value;
+      const expiry = this.premiumService.premiumUntil$.value;
+      let timeDetails = '';
+      if (expiry) {
+        const d = new Date(expiry);
+        const timeStr = d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const dateStr = d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+        timeDetails = `Active until ${dateStr} at ${timeStr}.`;
+      }
+
+      await this.modalService.alert(
+        '👑 Premium Access Active',
+        `Time Remaining: ${remaining}\n${timeDetails}\n\nYour 24-hour daily pass is active! All streaks, matrix cards, productivity intervals, and nutrition tracking features are fully unlocked.`
+      );
+    } else {
+      this.premiumService.openAdModal();
+    }
+  }
+
   ngOnInit() {
     const token = this.tracker.getToken();
     if (!token) {
@@ -99,11 +122,12 @@ export class LayoutComponent implements OnInit, OnDestroy {
     this.loadUserData();
     this.tracker.loadTodayWater();
 
-    // Enforce 1-Ad-Per-Day Premium Access Check
-    this.premiumService.enforceAccessCheck();
-
-    // Check if we should prompt on initial app load / login
-    this.checkPromptTrigger();
+    // Enforce 1-Ad-Per-Day Premium Access Check on App Start
+    this.premiumService.enforceAccessCheck().then(() => {
+      if (this.premiumService.isPremium$.value) {
+        this.checkPromptTrigger();
+      }
+    });
 
     // Attach listeners for tab reactivation after 1hr or away time
     if (typeof window !== 'undefined') {
@@ -124,6 +148,9 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   checkPromptTrigger() {
+    if (!this.premiumService.isPremium$.value) {
+      return;
+    }
     const justLoggedIn = sessionStorage.getItem('justLoggedIn') === 'true';
     const sessionPromptShown = sessionStorage.getItem('sessionTrackPromptShown') === 'true';
     const lastPromptTime = Number(localStorage.getItem('lastTrackPromptTime') || '0');
@@ -159,6 +186,7 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   private onVisibilityChange = () => {
     if (document.visibilityState === 'visible') {
+      this.premiumService.enforceAccessCheck();
       const lastActive = Number(localStorage.getItem('lastUserActiveTime') || '0');
       const lastPrompt = Number(localStorage.getItem('lastTrackPromptTime') || '0');
       const now = Date.now();

@@ -43,7 +43,7 @@ export class HomeComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    const token = sessionStorage.getItem('trackJwt');
+    const token = this.tracker.getToken();
     if (!token) {
       this.router.navigate(['/login']);
       return;
@@ -453,7 +453,7 @@ export class HomeComponent implements OnInit {
     );
 
     if (confirmed) {
-      sessionStorage.removeItem('trackJwt');
+      this.tracker.removeToken();
       this.isLoggedIn = false;
       this.router.navigate(['/login']);
     }

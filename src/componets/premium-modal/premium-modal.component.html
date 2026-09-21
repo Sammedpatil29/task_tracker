@@ -1,7 +1,7 @@
 <!-- UNCLOSABLE DAILY AD UNLOCK DIALOG -->
 <div
   class="premium-modal-backdrop"
-  *ngIf="premiumService.isAdModalOpen$ | async"
+  *ngIf="(premiumService.isAdModalOpen$ | async) && !(premiumService.isPremium$ | async)"
   (click)="onBackdropClick()">
 
   <div

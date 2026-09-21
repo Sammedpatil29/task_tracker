@@ -99,6 +99,8 @@ export class PremiumService {
       if (this.isAdModalOpen$.value) {
         this.isAdModalOpen$.next(false);
       }
+      // If active, strictly ensure the ad dialog is closed
+      this.isAdModalOpen$.next(false);
       return true;
     } else {
       this.isPremium$.next(false);
@@ -117,17 +119,33 @@ export class PremiumService {
   /**
    * Explicitly check status and enforce dialog if not unlocked
    */
-  public enforceAccessCheck(): void {
-    const isUnlocked = this.evaluateStatus();
-    if (!isUnlocked && this.trackerService.isTokenValid()) {
+  public async enforceAccessCheck(): Promise<void> {
+    // If premium is already active locally, keep modal closed
+    if (this.isPremium$.value) {
+      this.isAdModalOpen$.next(false);
+      return;
+    }
+
+    // Try syncing with backend first if user has a token
+    if (this.trackerService.isTokenValid()) {
+      await this.syncWithBackend().catch(() => {});
+    }
+
+    // Only if premium is still expired/inactive, open modal
+    if (!this.isPremium$.value && this.trackerService.isTokenValid()) {
       this.isAdModalOpen$.next(true);
     }
   }
 
   /**
    * Open the unclosable daily ad modal
+   * Open the unclosable daily ad modal ONLY if premium is expired / not active
    */
   public openAdModal(): void {
+    if (this.isPremium$.value) {
+      // If premium is active, do NOT open the ad modal until it expires
+      return;
+    }
     this.isAdModalOpen$.next(true);
   }
 

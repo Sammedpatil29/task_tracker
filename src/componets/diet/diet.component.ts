@@ -85,6 +85,8 @@ export class DietComponent implements OnInit {
     notes: ''
   };
   mealFormError: string = '';
+  isEstimatingAi: boolean = false;
+  aiPortionHint: string = '';
 
   readonly mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Pre-Workout', 'Post-Workout'];
   readonly mealTypeIcons: Record<string, string> = {
@@ -287,6 +289,7 @@ export class DietComponent implements OnInit {
       calories: null, proteinG: null, carbsG: null, fatG: null, fiberG: null, notes: ''
     };
     this.mealFormError = '';
+    this.aiPortionHint = '';
     this.showMealForm = true;
   }
 
@@ -303,11 +306,51 @@ export class DietComponent implements OnInit {
       notes: meal.notes || ''
     };
     this.mealFormError = '';
+    this.aiPortionHint = '';
     this.showMealForm = true;
   }
 
   closeMealForm() {
     this.showMealForm = false;
+    this.isEstimatingAi = false;
+    this.aiPortionHint = '';
+  }
+
+  estimateWithAi() {
+    const foodQuery = this.mealForm.name?.trim();
+    if (!foodQuery) {
+      this.mealFormError = 'Please enter a food item or meal name first (e.g. "Chicken rice bowl", "2 eggs with toast").';
+      return;
+    }
+
+    this.isEstimatingAi = true;
+    this.mealFormError = '';
+    this.aiPortionHint = '';
+
+    this.tracker.getAiNutritionEstimate(foodQuery, this.mealForm.notes).subscribe({
+      next: (res) => {
+        this.isEstimatingAi = false;
+        if (res && res.success) {
+          this.mealForm.calories = res.calories;
+          this.mealForm.proteinG = res.proteinG;
+          this.mealForm.carbsG = res.carbsG;
+          this.mealForm.fatG = res.fatG;
+          this.mealForm.fiberG = res.fiberG;
+
+          if (res.portion) {
+            this.aiPortionHint = `Analyzed portion: ${res.portion}`;
+            if (!this.mealForm.notes) {
+              this.mealForm.notes = res.portion;
+            }
+          }
+        }
+      },
+      error: (err) => {
+        this.isEstimatingAi = false;
+        const msg = err?.error?.error || 'Failed to estimate nutrition from AI. Please check your OpenAI API key.';
+        this.mealFormError = msg;
+      }
+    });
   }
 
   saveMeal() {

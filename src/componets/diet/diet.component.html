@@ -337,11 +337,31 @@
 
       <div class="modal-body">
 
-        <!-- Meal Name -->
+        <!-- Meal Name with AI Estimation Action -->
         <div class="form-group">
-          <label>Meal Name *</label>
-          <input type="text" class="input-field" [(ngModel)]="mealForm.name"
-            placeholder="e.g. Chicken Rice Bowl, Banana, Protein Shake...">
+          <div class="field-header-row">
+            <label>Meal Name *</label>
+            <button
+              type="button"
+              class="btn-ai-estimate"
+              [disabled]="isEstimatingAi || !mealForm.name.trim()"
+              (click)="estimateWithAi()"
+              title="Auto-calculate calories and macro breakdown using AI">
+              <span class="ai-sparkle-icon" [class.spinning]="isEstimatingAi">✨</span>
+              <span>{{ isEstimatingAi ? 'Estimating with AI...' : 'Get AI Breakdown' }}</span>
+            </button>
+          </div>
+          <div class="input-with-action">
+            <input type="text" class="input-field" [(ngModel)]="mealForm.name"
+              (keyup.enter)="estimateWithAi()"
+              placeholder="e.g. Chicken Rice Bowl, 2 boiled eggs & toast, 1 medium apple...">
+          </div>
+          @if (aiPortionHint) {
+            <div class="ai-portion-tag">
+              <span class="ai-tag-icon">🤖</span>
+              <span>{{ aiPortionHint }}</span>
+            </div>
+          }
         </div>
 
         <!-- Meal Type -->

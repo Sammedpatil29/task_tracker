@@ -303,5 +303,23 @@ export class TaskTrackerService {
         })
       );
   }
+
+  // ===================== AI NUTRITION ESTIMATION ===================== //
+
+  getAiNutritionEstimate(foodQuery: string, notes?: string) {
+    const headers = this.getAuthHeaders();
+    return this.http.post<{
+      success: boolean;
+      foodName: string;
+      portion: string;
+      calories: number;
+      proteinG: number;
+      carbsG: number;
+      fatG: number;
+      fiberG: number;
+      confidence?: string;
+      summary?: string;
+    }>(this.url + 'api/diet/ai-nutrition', { foodQuery, notes }, { headers });
+  }
 }
 

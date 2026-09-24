@@ -490,6 +490,7 @@
   display: flex;
   border: 1.5px solid rgba(239, 68, 68, 0.25);
   background: var(--bg-card);
+  display: none;
 }
 
 .logout-card-content {
@@ -513,7 +514,6 @@
   cursor: pointer;
   transition: all 0.2s ease;
   width: 100%;
-  max-width: 240px;
 }
 
 .btn-settings-logout:hover {

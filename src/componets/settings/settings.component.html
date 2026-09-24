@@ -74,7 +74,7 @@
           <div class="form-actions">
             <button
               type="submit"
-              class="btn-save"
+              class="btn-save w-100"
               [disabled]="isSaving">
               <span *ngIf="isSaving">Saving... ⏳</span>
               <span *ngIf="!isSaving">💾 Save Profile Changes</span>
@@ -176,7 +176,7 @@
           <div class="form-actions">
             <button
               type="button"
-              class="btn-save btn-hydration-save"
+              class="btn-save btn-hydration-save w-100"
               (click)="saveHydrationSettings()">
               <span>💾 Save Hydration Preferences</span>
             </button>
@@ -195,7 +195,7 @@
         </div>
         <div class="logout-card-content">
           <p class="hint-text">Your habits, consistency matrix, time logs, and nutrition data are securely stored in the cloud.</p>
-          <button type="button" class="btn-settings-logout" (click)="logout()">
+          <button type="button" class="btn-settings-logout w-100" (click)="logout()">
             <span>Logout 🚪</span>
           </button>
         </div>

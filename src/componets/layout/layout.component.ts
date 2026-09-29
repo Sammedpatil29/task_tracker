@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
+import { Capacitor } from '@capacitor/core';
 import { TaskTrackerService } from '../../services/task-tracker.service';
 import { ModalService } from '../../services/modal.service';
 import { ModalComponent } from '../modal/modal.component';
@@ -30,6 +31,10 @@ export class LayoutComponent implements OnInit, OnDestroy {
   userName: string = 'User';
   userEmoji: string = '🌱';
   year: number = new Date().getFullYear();
+
+  // Platform detection (Play Store download button shown only on web, never on native mobile)
+  isNativeApp: boolean = Capacitor.isNativePlatform();
+  playStoreUrl: string = 'https://play.google.com/store/apps/details?id=com.discipline.tasktracker';
 
   // Closed Testing (14 Days) Watermark State
   testingDaysCompleted: number = 5;

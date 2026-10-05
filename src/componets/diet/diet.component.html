@@ -337,8 +337,8 @@
 
       <div class="modal-body">
 
-        <!-- Meal Name with AI Estimation Action -->
-        <div class="form-group">
+        <!-- Meal Name with Autocomplete Suggestions & AI Estimation Action -->
+        <div class="form-group meal-name-group">
           <div class="field-header-row">
             <label>Meal Name *</label>
             <button
@@ -351,11 +351,74 @@
               <span>{{ isEstimatingAi ? 'Estimating with AI...' : 'Get AI Breakdown' }}</span>
             </button>
           </div>
-          <div class="input-with-action">
-            <input type="text" class="input-field" [(ngModel)]="mealForm.name"
-              (keyup.enter)="estimateWithAi()"
-              placeholder="e.g. Chicken Rice Bowl, 2 boiled eggs & toast, 1 medium apple...">
+
+          <div class="input-with-suggestions">
+            <input
+              type="text"
+              class="input-field"
+              [(ngModel)]="mealForm.name"
+              (input)="onMealNameInput()"
+              (focus)="onMealNameFocus()"
+              (blur)="onMealNameBlur()"
+              (keydown)="onMealNameKeydown($event)"
+              placeholder="e.g. Chicken Rice Bowl, 2 boiled eggs & toast, 1 medium apple..."
+              autocomplete="off">
+
+            <!-- PREVIOUS MEALS AUTOCOMPLETE DROPDOWN -->
+            @if (showSuggestions && filteredMealSuggestions.length > 0) {
+              <div class="meal-suggestions-dropdown" (mousedown)="$event.preventDefault()">
+                <div class="suggestions-header">
+                  <span class="suggestions-kicker">
+                    {{ mealForm.name.trim() ? '⚡ Previous matches (Click to fill)' : '🕐 Recently logged meals' }}
+                  </span>
+                  <span class="suggestions-hint">{{ filteredMealSuggestions.length }} found</span>
+                </div>
+
+                <div class="suggestions-list">
+                  @for (item of filteredMealSuggestions; track item.id || item.name; let idx = $index) {
+                    <div
+                      class="suggestion-item"
+                      [class.selected]="idx === selectedSuggestionIndex"
+                      (click)="selectSuggestion(item)">
+                      <div class="suggestion-main">
+                        <div class="suggestion-title-row">
+                          <span class="suggestion-icon">{{ mealTypeIcons[item.mealType] || '🍽️' }}</span>
+                          <span class="suggestion-name">{{ item.name }}</span>
+                          <span class="suggestion-type-badge">{{ item.mealType }}</span>
+                        </div>
+                        @if (item.notes) {
+                          <div class="suggestion-notes">📝 {{ item.notes }}</div>
+                        }
+                      </div>
+
+                      <div class="suggestion-macros">
+                        <span class="macro-pill cal-pill">🔥 {{ item.calories }} kcal</span>
+                        <div class="sub-macros-row">
+                          <span class="sub-macro" title="Protein">🟢 {{ item.proteinG || 0 }}g</span>
+                          <span class="sub-macro" title="Carbs">🔵 {{ item.carbsG || 0 }}g</span>
+                          <span class="sub-macro" title="Fat">🔴 {{ item.fatG || 0 }}g</span>
+                        </div>
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
           </div>
+
+          <!-- Autofill Success Feedback Banner -->
+          @if (autoFilledFromHistory) {
+            <div class="autofill-success-banner">
+              <div class="autofill-banner-content">
+                <span class="autofill-badge-icon">⚡</span>
+                <span class="autofill-text">
+                  Auto-filled from previous log: <strong>{{ autoFilledMealName }}</strong>
+                </span>
+              </div>
+              <button type="button" class="btn-dismiss-autofill" (click)="clearAutoFillNotice()" title="Dismiss">✕</button>
+            </div>
+          }
+
           @if (aiPortionHint) {
             <div class="ai-portion-tag">
               <span class="ai-tag-icon">🤖</span>

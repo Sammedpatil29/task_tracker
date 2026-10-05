@@ -88,6 +88,16 @@ export class DietComponent implements OnInit {
   isEstimatingAi: boolean = false;
   aiPortionHint: string = '';
 
+  // Previous meal suggestions & autocomplete
+  userMealHistory: any[] = [];
+  filteredMealSuggestions: any[] = [];
+  showSuggestions: boolean = false;
+  isLoadingSuggestions: boolean = false;
+  selectedSuggestionIndex: number = -1;
+  autoFilledFromHistory: boolean = false;
+  autoFilledMealName: string = '';
+  private blurTimeout: any = null;
+
   readonly mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Pre-Workout', 'Post-Workout'];
   readonly mealTypeIcons: Record<string, string> = {
     'Breakfast': '🌅', 'Lunch': '☀️', 'Dinner': '🌙',
@@ -101,6 +111,7 @@ export class DietComponent implements OnInit {
     this.currentDate = new Date();
     this.currentDateStr = this.formatDate(this.currentDate);
     this.loadAll();
+    this.loadUserMealHistory();
 
     this.tracker.todayWater$.subscribe((val) => {
       if (this.isToday()) {
@@ -281,6 +292,129 @@ export class DietComponent implements OnInit {
     this.goalDraft.fiberG = Math.round(cal / 70); // ~14g per 1000 kcal
   }
 
+  // --- Meal Suggestions & Autocomplete Methods ---
+  loadUserMealHistory(query?: string) {
+    this.isLoadingSuggestions = true;
+    this.tracker.getMealSuggestions(query).subscribe({
+      next: (list) => {
+        this.isLoadingSuggestions = false;
+        if (!query) {
+          this.userMealHistory = list || [];
+        }
+        this.filteredMealSuggestions = list || [];
+      },
+      error: () => {
+        this.isLoadingSuggestions = false;
+      }
+    });
+  }
+
+  onMealNameInput() {
+    this.autoFilledFromHistory = false;
+    this.autoFilledMealName = '';
+    const q = (this.mealForm.name || '').trim().toLowerCase();
+
+    if (!q) {
+      this.filteredMealSuggestions = this.userMealHistory.slice(0, 8);
+      this.showSuggestions = this.filteredMealSuggestions.length > 0;
+    } else {
+      // Local immediate filtering for 0ms response
+      const localMatches = this.userMealHistory.filter(m =>
+        (m.name || '').toLowerCase().includes(q)
+      );
+      this.filteredMealSuggestions = localMatches;
+      this.showSuggestions = localMatches.length > 0;
+
+      // Query server in background to catch any items not in local cache
+      this.tracker.getMealSuggestions(q).subscribe({
+        next: (serverMatches) => {
+          if ((this.mealForm.name || '').trim().toLowerCase() === q) {
+            this.filteredMealSuggestions = serverMatches || [];
+            this.showSuggestions = this.filteredMealSuggestions.length > 0;
+          }
+        }
+      });
+    }
+
+    this.selectedSuggestionIndex = -1;
+  }
+
+  onMealNameFocus() {
+    if (this.blurTimeout) {
+      clearTimeout(this.blurTimeout);
+      this.blurTimeout = null;
+    }
+    const q = (this.mealForm.name || '').trim().toLowerCase();
+    if (!q) {
+      this.filteredMealSuggestions = this.userMealHistory.slice(0, 8);
+    } else {
+      this.filteredMealSuggestions = this.userMealHistory.filter(m =>
+        (m.name || '').toLowerCase().includes(q)
+      );
+    }
+    this.showSuggestions = this.filteredMealSuggestions.length > 0;
+  }
+
+  onMealNameBlur() {
+    this.blurTimeout = setTimeout(() => {
+      this.showSuggestions = false;
+    }, 250);
+  }
+
+  onMealNameKeydown(event: KeyboardEvent) {
+    if (!this.showSuggestions || this.filteredMealSuggestions.length === 0) {
+      if (event.key === 'Enter') {
+        this.estimateWithAi();
+      }
+      return;
+    }
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.selectedSuggestionIndex = (this.selectedSuggestionIndex + 1) % this.filteredMealSuggestions.length;
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.selectedSuggestionIndex = this.selectedSuggestionIndex <= 0
+        ? this.filteredMealSuggestions.length - 1
+        : this.selectedSuggestionIndex - 1;
+    } else if (event.key === 'Enter') {
+      if (this.selectedSuggestionIndex >= 0 && this.selectedSuggestionIndex < this.filteredMealSuggestions.length) {
+        event.preventDefault();
+        this.selectSuggestion(this.filteredMealSuggestions[this.selectedSuggestionIndex]);
+      } else {
+        this.estimateWithAi();
+      }
+    } else if (event.key === 'Escape') {
+      this.showSuggestions = false;
+    }
+  }
+
+  selectSuggestion(item: any) {
+    this.mealForm.name = item.name;
+    this.mealForm.calories = item.calories != null ? item.calories : null;
+    this.mealForm.proteinG = item.proteinG != null ? item.proteinG : null;
+    this.mealForm.carbsG = item.carbsG != null ? item.carbsG : null;
+    this.mealForm.fatG = item.fatG != null ? item.fatG : null;
+    this.mealForm.fiberG = item.fiberG != null ? item.fiberG : null;
+    if (item.mealType) {
+      this.mealForm.mealType = item.mealType;
+    }
+    if (item.notes) {
+      this.mealForm.notes = item.notes;
+    }
+
+    this.autoFilledFromHistory = true;
+    this.autoFilledMealName = item.name;
+    this.aiPortionHint = '';
+    this.mealFormError = '';
+    this.showSuggestions = false;
+    this.selectedSuggestionIndex = -1;
+  }
+
+  clearAutoFillNotice() {
+    this.autoFilledFromHistory = false;
+  }
+
   // --- Meal Form ---
   openAddMeal(mealType?: string) {
     this.editingMealId = null;
@@ -290,6 +424,15 @@ export class DietComponent implements OnInit {
     };
     this.mealFormError = '';
     this.aiPortionHint = '';
+    this.autoFilledFromHistory = false;
+    this.autoFilledMealName = '';
+    this.showSuggestions = false;
+    this.selectedSuggestionIndex = -1;
+    if (this.userMealHistory.length === 0) {
+      this.loadUserMealHistory();
+    } else {
+      this.filteredMealSuggestions = this.userMealHistory.slice(0, 8);
+    }
     this.showMealForm = true;
   }
 
@@ -307,6 +450,9 @@ export class DietComponent implements OnInit {
     };
     this.mealFormError = '';
     this.aiPortionHint = '';
+    this.autoFilledFromHistory = false;
+    this.autoFilledMealName = '';
+    this.showSuggestions = false;
     this.showMealForm = true;
   }
 
@@ -314,6 +460,8 @@ export class DietComponent implements OnInit {
     this.showMealForm = false;
     this.isEstimatingAi = false;
     this.aiPortionHint = '';
+    this.showSuggestions = false;
+    this.autoFilledFromHistory = false;
   }
 
   estimateWithAi() {
@@ -384,9 +532,22 @@ export class DietComponent implements OnInit {
 
     obs.subscribe({
       next: () => {
+        // Update userMealHistory with newly logged meal for future suggestions
+        const existingIdx = this.userMealHistory.findIndex(
+          m => (m.name || '').toLowerCase() === payload.name.toLowerCase()
+        );
+        const itemToSave = { ...payload, id: this.editingMealId || Date.now() };
+        if (existingIdx >= 0) {
+          this.userMealHistory[existingIdx] = { ...this.userMealHistory[existingIdx], ...itemToSave };
+        } else {
+          this.userMealHistory.unshift(itemToSave);
+        }
+
         this.loadDayLogs();
         this.showMealForm = false;
         this.isLoggingMeal = false;
+        this.autoFilledFromHistory = false;
+        this.showSuggestions = false;
       },
       error: () => {
         this.mealFormError = 'Failed to save meal. Please try again.';

@@ -213,6 +213,12 @@ export class TaskTrackerService {
     return this.http.get<any[]>(this.url + `api/diet/logs?${query}`, { headers });
   }
 
+  getMealSuggestions(query?: string) {
+    const headers = this.getAuthHeaders();
+    const q = query ? `?q=${encodeURIComponent(query)}` : '';
+    return this.http.get<any[]>(this.url + `api/diet/meals/suggestions${q}`, { headers });
+  }
+
   addMealLog(data: {
     name: string; date: string; mealType: string;
     calories: number; proteinG?: number; carbsG?: number;

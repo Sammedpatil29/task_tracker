@@ -27,6 +27,8 @@ export class PremiumService {
   public remainingHours$ = new BehaviorSubject<number>(0);
   public remainingMinutes$ = new BehaviorSubject<number>(0);
   public remainingFormatted$ = new BehaviorSubject<string>('Expired');
+  public isCheckingSubscription$ = new BehaviorSubject<boolean>(true);
+  private isInitialSyncDone = false;
 
   // Modal & Video simulation state
   public isAdModalOpen$ = new BehaviorSubject<boolean>(false);
@@ -49,16 +51,17 @@ export class PremiumService {
     // Start periodic 1-minute ticker
     this.checkTimer = setInterval(() => {
       this.ngZone.run(() => {
-        this.evaluateStatus();
+        this.evaluateStatus(true);
       });
     }, 60000);
 
-    // Initial sync with backend if user is already authenticated
-    setTimeout(() => {
-      if (this.trackerService.isTokenValid()) {
-        this.syncWithBackend().catch(() => {});
-      }
-    }, 800);
+    // Initial sync with backend immediately without artificial delay
+    if (this.trackerService.isTokenValid()) {
+      this.syncWithBackend().catch(() => {});
+    } else {
+      this.isCheckingSubscription$.next(false);
+      this.isInitialSyncDone = true;
+    }
   }
 
   private getEndpoint(endpoint: string): string {
@@ -75,19 +78,20 @@ export class PremiumService {
     let expiryMs: number | null = null;
     if (rawExpiry) {
       const parsed = parseInt(rawExpiry, 10);
-      if (!isNaN(parsed) && parsed > 0) {
+      if (!isNaN(parsed) && parsed > Date.now()) {
         expiryMs = parsed;
       }
     }
 
     this.premiumUntil$.next(expiryMs);
-    this.evaluateStatus();
+    // Explicitly pass allowModalOpen = false so modal never flashes on startup!
+    this.evaluateStatus(false);
   }
 
   /**
    * Recompute current premium state from timestamp
    */
-  public evaluateStatus(): boolean {
+  public evaluateStatus(allowModalOpen: boolean = false): boolean {
     const expiry = this.premiumUntil$.value;
     const now = Date.now();
 
@@ -105,8 +109,6 @@ export class PremiumService {
       if (this.isAdModalOpen$.value) {
         this.isAdModalOpen$.next(false);
       }
-      // If active, strictly ensure the ad dialog is closed
-      this.isAdModalOpen$.next(false);
       return true;
     } else {
       this.isPremium$.next(false);
@@ -114,8 +116,8 @@ export class PremiumService {
       this.remainingMinutes$.next(0);
       this.remainingFormatted$.next('Expired');
 
-      // If user is authenticated on the app and not premium, trigger unclosable modal
-      if (this.trackerService.isTokenValid() && !this.isAdModalOpen$.value) {
+      // Only open ad modal if initial sync is done, allowModalOpen is true, and user is logged in
+      if (this.isInitialSyncDone && allowModalOpen && this.trackerService.isTokenValid() && !this.isAdModalOpen$.value) {
         this.isAdModalOpen$.next(true);
       }
       return false;
@@ -128,18 +130,26 @@ export class PremiumService {
   public async enforceAccessCheck(): Promise<void> {
     if (!this.trackerService.isTokenValid()) {
       this.isAdModalOpen$.next(false);
+      this.isCheckingSubscription$.next(false);
       return;
     }
+
+    // Keep modal strictly closed while verifying subscription
+    this.isAdModalOpen$.next(false);
+    this.isCheckingSubscription$.next(true);
 
     // Always check real-time status from backend on app start
     try {
       await this.syncWithBackend();
     } catch (e) {
       console.warn('⚠️ [Premium] App start sync notice:', e);
-      this.evaluateStatus();
+    } finally {
+      this.isInitialSyncDone = true;
+      this.isCheckingSubscription$.next(false);
     }
 
-    // If premium is not active, immediately show modal to watch ad
+    // Only after verification is 100% complete:
+    // If premium is not active, show modal to watch ad
     if (!this.isPremium$.value) {
       this.isAdModalOpen$.next(true);
     } else {
@@ -261,9 +271,14 @@ export class PremiumService {
    * Sync with backend API status
    */
   public async syncWithBackend(): Promise<void> {
-    if (!this.trackerService.isTokenValid()) return;
+    if (!this.trackerService.isTokenValid()) {
+      this.isCheckingSubscription$.next(false);
+      this.isAdModalOpen$.next(false);
+      return;
+    }
 
     try {
+      this.isCheckingSubscription$.next(true);
       const headers = this.trackerService.getAuthHeaders();
       const res: any = await firstValueFrom(
         this.http.get(this.getEndpoint('/api/user/premium-status'), { headers })
@@ -280,10 +295,12 @@ export class PremiumService {
           this.premiumUntil$.next(null);
         }
       }
-      this.evaluateStatus();
     } catch (err) {
       console.warn('⚠️ [Premium] Status sync error:', err);
-      this.evaluateStatus();
+    } finally {
+      this.isInitialSyncDone = true;
+      this.isCheckingSubscription$.next(false);
+      this.evaluateStatus(false);
     }
   }
 }

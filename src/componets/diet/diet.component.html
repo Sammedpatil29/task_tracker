@@ -212,6 +212,45 @@
           </div>
         }
 
+        <!-- Uncategorized / Unselected Category Block -->
+        @if (getUncategorizedMeals().length > 0) {
+          <div class="meal-type-group uncategorized-group">
+            <div class="meal-type-head uncategorized-head">
+              <span class="meal-type-icon">🍽️</span>
+              <span class="meal-type-name">
+                Other / Uncategorized
+                <span class="uncategorized-badge">Unselected Category</span>
+              </span>
+              <span class="meal-type-kcal">{{ getUncategorizedCalories() | number:'1.0-0' }} kcal</span>
+              <button type="button" class="btn-add-type-inline" (click)="openAddMeal('Meal')">+ Add</button>
+            </div>
+
+            <div class="meal-cards">
+              @for (meal of getUncategorizedMeals(); track meal.id) {
+                <div class="meal-card">
+                  <div class="meal-card-main">
+                    <div class="meal-card-name">{{ meal.name }}</div>
+                    <div class="meal-card-macros">
+                      <span class="mc-cal">🔥 {{ meal.calories | number:'1.0-0' }} kcal</span>
+                      @if (meal.proteinG) { <span class="mc-p">P: {{ meal.proteinG }}g</span> }
+                      @if (meal.carbsG) { <span class="mc-c">C: {{ meal.carbsG }}g</span> }
+                      @if (meal.fatG) { <span class="mc-f">F: {{ meal.fatG }}g</span> }
+                      @if (meal.fiberG) { <span class="mc-fi">Fi: {{ meal.fiberG }}g</span> }
+                    </div>
+                    @if (meal.notes) {
+                      <div class="meal-card-notes">📝 {{ meal.notes }}</div>
+                    }
+                  </div>
+                  <div class="meal-card-actions">
+                    <button class="btn-edit-meal" (click)="openEditMeal(meal)" title="Edit Meal">✏️</button>
+                    <button class="btn-delete-meal" (click)="deleteMeal(meal.id!)" title="Delete Meal">🗑️</button>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+
         <!-- Unlogged meal type quick-add buttons -->
         <div class="quick-add-row">
           @for (type of mealTypes; track type) {
@@ -429,16 +468,26 @@
 
         <!-- Meal Type -->
         <div class="form-group">
-          <label>Meal Type</label>
+          <div class="meal-type-label-row">
+            <label>Meal Type <span class="optional-tag">(optional)</span></label>
+            @if (mealForm.mealType && mealForm.mealType !== 'Meal') {
+              <button type="button" class="btn-clear-type" (click)="mealForm.mealType = 'Meal'">
+                Clear category
+              </button>
+            }
+          </div>
           <div class="meal-type-pills">
             @for (type of mealTypes; track type) {
               <button type="button" class="meal-type-pill"
                 [class.active]="mealForm.mealType === type"
-                (click)="mealForm.mealType = type">
+                (click)="selectMealType(type)">
                 {{ mealTypeIcons[type] }} {{ type }}
               </button>
             }
           </div>
+          @if (!mealForm.mealType || mealForm.mealType === 'Meal') {
+            <span class="meal-type-hint">No category selected — will appear in "Other / Uncategorized"</span>
+          }
         </div>
 
         <!-- Calories (Primary) -->

@@ -101,7 +101,8 @@ export class DietComponent implements OnInit {
   readonly mealTypes = ['Breakfast', 'Lunch', 'Dinner', 'Snack', 'Pre-Workout', 'Post-Workout'];
   readonly mealTypeIcons: Record<string, string> = {
     'Breakfast': '🌅', 'Lunch': '☀️', 'Dinner': '🌙',
-    'Snack': '🍎', 'Pre-Workout': '💪', 'Post-Workout': '🏋️', 'Meal': '🍽️'
+    'Snack': '🍎', 'Pre-Workout': '💪', 'Post-Workout': '🏋️', 'Meal': '🍽️',
+    'Other': '🍽️', 'Uncategorized': '🍽️'
   };
   readonly macroColors = { calories: '#f59e0b', protein: '#10b981', carbs: '#3b82f6', fat: '#f43f5e', fiber: '#8b5cf6' };
 
@@ -591,6 +592,22 @@ export class DietComponent implements OnInit {
   getUsedMealTypes(): string[] {
     const used = new Set(this.mealLogs.map(m => m.mealType));
     return this.mealTypes.filter(t => used.has(t));
+  }
+
+  getUncategorizedMeals(): MealLog[] {
+    return this.mealLogs.filter(m => !m.mealType || !this.mealTypes.includes(m.mealType));
+  }
+
+  getUncategorizedCalories(): number {
+    return this.getUncategorizedMeals().reduce((s, m) => s + (m.calories || 0), 0);
+  }
+
+  selectMealType(type: string) {
+    if (this.mealForm.mealType === type) {
+      this.mealForm.mealType = 'Meal';
+    } else {
+      this.mealForm.mealType = type;
+    }
   }
 
   getTypeCalories(type: string): number {

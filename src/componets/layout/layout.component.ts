@@ -36,13 +36,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
   isNativeApp: boolean = Capacitor.isNativePlatform();
   playStoreUrl: string = 'https://play.google.com/store/apps/details?id=com.discipline.tasktracker';
 
-  // Closed Testing (14 Days) Watermark State
-  testingDaysCompleted: number = 5;
-  isClosedTestingCompleted: boolean = false;
-  watermarkText: string = 'Closed Testing: 5/14 Days Completed';
-  watermarkRepeats: number[] = Array.from({ length: 32 }, (_, i) => i);
-  private testingProgressTimer: any = null;
-
   // 3-Method Tracking Prompt Popup
   showTrackPrompt: boolean = false;
   private lastActiveUpdate: number = 0;
@@ -124,27 +117,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
     }
   }
 
-  calculateTestingProgress(): void {
-    // Closed testing anchor: Sept 23, 2026 at 3:00 PM IST (+05:30)
-    // On Sept 28, 2026 night: 5 days completed
-    // On Sept 29, 2026 at 3:00 PM: 6 days completed
-    // Updates daily every afternoon around 3:00 PM until 14 days
-    const startAnchorMs = new Date('2026-09-23T15:00:00+05:30').getTime();
-    const now = Date.now();
-    const msPerDay = 24 * 60 * 60 * 1000;
-    const diff = now - startAnchorMs;
-    const completed = Math.max(0, Math.floor(diff / msPerDay));
-
-    this.testingDaysCompleted = completed;
-    if (completed >= 14) {
-      this.isClosedTestingCompleted = true;
-      this.watermarkText = 'Closed Testing Completed';
-    } else {
-      this.isClosedTestingCompleted = false;
-      this.watermarkText = `Closed Testing: ${completed}/14 Days Completed`;
-    }
-  }
-
   ngOnInit() {
     const token = this.tracker.getToken();
     if (!token) {
@@ -154,12 +126,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
     this.loadUserData();
     this.tracker.loadTodayWater();
-
-    // Initialize Closed Testing Progress and periodic 1-minute ticker
-    this.calculateTestingProgress();
-    this.testingProgressTimer = setInterval(() => {
-      this.calculateTestingProgress();
-    }, 60000);
 
     // Enforce 1-Ad-Per-Day Premium Access Check on App Start
     this.premiumService.enforceAccessCheck().then(() => {
@@ -178,9 +144,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    if (this.testingProgressTimer) {
-      clearInterval(this.testingProgressTimer);
-    }
     if (typeof window !== 'undefined') {
       document.removeEventListener('visibilitychange', this.onVisibilityChange);
       window.removeEventListener('focus', this.onWindowFocus);
@@ -228,7 +191,6 @@ export class LayoutComponent implements OnInit, OnDestroy {
 
   private onVisibilityChange = () => {
     if (document.visibilityState === 'visible') {
-      this.calculateTestingProgress();
       this.premiumService.enforceAccessCheck();
       const lastActive = Number(localStorage.getItem('lastUserActiveTime') || '0');
       const lastPrompt = Number(localStorage.getItem('lastTrackPromptTime') || '0');

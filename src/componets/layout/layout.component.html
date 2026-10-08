@@ -26,10 +26,6 @@
     <header class="topbar">
       <div class="topbar-left">
         📈<span class="app-brand"> Discipline Tracker</span>
-        <!-- <span class="topbar-testing-tag" [class.completed]="isClosedTestingCompleted" [title]="watermarkText">
-          <span class="tag-pulse"></span>
-          <span class="tag-text">{{ isClosedTestingCompleted ? 'Testing Completed' : ('Day ' + testingDaysCompleted + '/14') }}</span>
-        </span> -->
       </div>
 
       <div class="topbar-right">
@@ -168,22 +164,6 @@
         </button>
       </div>
     </div>
-  </div>
-
-  <!-- CLOSED TESTING WATERMARK OVERLAY -->
-  <!-- <div class="closed-testing-watermark-overlay" aria-hidden="true">
-    <div class="watermark-grid">
-      <div class="watermark-item" *ngFor="let i of watermarkRepeats">
-        <span class="watermark-icon">🧪</span>
-        <span class="watermark-content">{{ watermarkText }}</span>
-      </div>
-    </div>
-  </div> -->
-
-  <!-- FLOATING CLOSED TESTING BADGE CHIP -->
-  <div class="closed-testing-badge-chip" [class.completed]="isClosedTestingCompleted">
-    <span class="badge-chip-icon">{{ isClosedTestingCompleted ? '🎉' : '🧪' }}</span>
-    <span class="badge-chip-text">{{ watermarkText }}</span>
   </div>
 
   <!-- GLOBAL MODAL & PROMPTS -->

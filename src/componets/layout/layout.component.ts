@@ -13,12 +13,10 @@ import { PremiumModalComponent } from '../premium-modal/premium-modal.component'
 export interface TrackOption {
   id: string;
   title: string;
-  badge: string;
+  badge?: string;
   icon: string;
   color: string;
-  description: string;
   path: string;
-  actionText: string;
 }
 
 @Component({
@@ -43,33 +41,35 @@ export class LayoutComponent implements OnInit, OnDestroy {
   trackOptions: TrackOption[] = [
     {
       id: 'discipline',
-      title: 'Habits & Discipline',
-      badge: 'Daily Consistency',
+      title: 'Habits',
+      badge: 'Streaks',
       icon: '📈',
       color: '#10b981',
-      description: 'Check off daily habits, maintain unbroken streaks, and review your consistency matrix.',
-      path: '/home',
-      actionText: 'Track Habits'
+      path: '/home'
     },
     {
       id: 'productivity',
-      title: 'Productivity & Time',
-      badge: '24h Allocation',
+      title: 'Productivity',
+      badge: 'Time',
       icon: '⏱️',
       color: '#3b82f6',
-      description: 'Log time intervals, track work vs recovery, and compare actual hours against 24h goals.',
-      path: '/productivity',
-      actionText: 'Track Time'
+      path: '/productivity'
     },
     {
       id: 'diet',
-      title: 'Diet & Nutrition',
-      badge: 'Calories & Macros',
+      title: 'Meals',
+      badge: 'Diet',
       icon: '🥗',
       color: '#f59e0b',
-      description: 'Log meals, monitor daily calorie targets, track macronutrients, and log hydration.',
-      path: '/diet',
-      actionText: 'Track Nutrition'
+      path: '/diet'
+    },
+    {
+      id: 'analytics',
+      title: 'Analytics',
+      badge: 'Insights',
+      icon: '📊',
+      color: '#8b5cf6',
+      path: '/analytics'
     }
   ];
 
@@ -182,6 +182,19 @@ export class LayoutComponent implements OnInit, OnDestroy {
     const now = Date.now();
     localStorage.setItem('lastTrackPromptTime', now.toString());
     localStorage.setItem('lastUserActiveTime', now.toString());
+  }
+
+  get waterPct(): number {
+    const current = this.tracker.todayWater$.value || 0;
+    const target = this.tracker.waterGoal$.value || 2500;
+    return Math.min(100, Math.round((current / (target || 1)) * 100));
+  }
+
+  addPromptWater(delta: number, event?: MouseEvent) {
+    if (event) {
+      event.stopPropagation();
+    }
+    this.tracker.quickAddTodayWater(delta);
   }
 
   selectTrackOption(path: string) {

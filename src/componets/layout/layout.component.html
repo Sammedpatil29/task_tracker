@@ -118,50 +118,81 @@
     </div>
   </div>
 
-  <!-- TRANSPARENT 3-METHOD TRACK SELECTION POPUP -->
+  <!-- QUICK LOG & TRACK SELECTION POPUP -->
   <div class="track-prompt-overlay" *ngIf="showTrackPrompt" (click)="closeTrackPrompt()">
     <div class="track-prompt-card" (click)="$event.stopPropagation()">
       <!-- Ambient Glow Behind Glass -->
       <div class="card-ambient-glow"></div>
 
       <!-- Close Button -->
-      <button type="button" class="btn-prompt-close" (click)="closeTrackPrompt()" title="Dismiss (Esc)">✕</button>
+      <button type="button" class="btn-prompt-close" (click)="closeTrackPrompt()" title="Close">✕</button>
 
       <div class="prompt-header">
-        <div class="prompt-kicker">✨ Daily Tracking Focus</div>
-        <h2 class="prompt-title">What would you like to track right now?</h2>
-        <p class="prompt-subtitle">
-          Welcome back{{ userName && userName !== 'User' ? ', ' + (userName | titlecase) : '' }}! Choose your tracking focus to jump straight into action:
-        </p>
+        <h2 class="prompt-title">What to log today?</h2>
       </div>
 
-      <!-- 3 Tracking Methods Grid -->
+      <!-- TOP: Water Record from Diet -->
+      <div class="prompt-water-card">
+        <div class="prompt-water-row">
+          <div class="prompt-water-meta" (click)="selectTrackOption('/diet')" title="View in Diet Tracker">
+            <span class="prompt-water-icon">💧</span>
+            <div class="prompt-water-text">
+              <span class="prompt-water-label">Water Intake</span>
+              <div class="prompt-water-count">
+                <strong>{{ tracker.todayWater$ | async }}</strong>
+                <span class="prompt-water-goal">/ {{ tracker.waterGoal$ | async }} ml</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Water Add/Subtract Buttons -->
+          <div class="prompt-water-btns">
+            <button
+              type="button"
+              class="btn-pwater"
+              [disabled]="tracker.isWaterUpdating$ | async"
+              (click)="addPromptWater(250, $event)"
+              title="Add 250ml">
+              +250
+            </button>
+            <button
+              type="button"
+              class="btn-pwater"
+              [disabled]="tracker.isWaterUpdating$ | async"
+              (click)="addPromptWater(500, $event)"
+              title="Add 500ml">
+              +500
+            </button>
+            <button
+              type="button"
+              class="btn-pwater-minus"
+              [disabled]="((tracker.todayWater$ | async) || 0) <= 0 || (tracker.isWaterUpdating$ | async)"
+              (click)="addPromptWater(-250, $event)"
+              title="Remove 250ml">
+              −
+            </button>
+          </div>
+        </div>
+
+        <div class="prompt-water-bar-track" (click)="selectTrackOption('/diet')">
+          <div class="prompt-water-bar-fill" [style.width.%]="waterPct"></div>
+        </div>
+      </div>
+
+      <!-- BELOW: Other Options (Less text) -->
       <div class="prompt-options-grid">
         <div
           *ngFor="let opt of trackOptions"
           class="prompt-opt-card"
           [style.--opt-accent]="opt.color"
           (click)="selectTrackOption(opt.path)">
-          
-          <div class="opt-card-top">
-            <div class="opt-icon-bubble">{{ opt.icon }}</div>
-            <span class="opt-badge">{{ opt.badge }}</span>
+          <div class="opt-icon-bubble">{{ opt.icon }}</div>
+          <div class="opt-info">
+            <h3 class="opt-title">{{ opt.title }}</h3>
+            <span class="opt-badge" *ngIf="opt.badge">{{ opt.badge }}</span>
           </div>
-
-          <h3 class="opt-title">{{ opt.title }}</h3>
-          <p class="opt-desc">{{ opt.description }}</p>
-
-          <div class="opt-action-btn">
-            <span>{{ opt.actionText }} ➔</span>
-          </div>
+          <span class="opt-arrow">➔</span>
         </div>
-      </div>
-
-      <!-- Bottom Secondary Actions -->
-      <div class="prompt-footer">
-        <button type="button" class="btn-prompt-secondary" (click)="selectTrackOption('/analytics')">
-          📊 Or explore Overall Analytics & Insights
-        </button>
       </div>
     </div>
   </div>

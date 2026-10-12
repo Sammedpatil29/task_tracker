@@ -15,8 +15,8 @@ export interface AdRewardResult {
   providedIn: 'root'
 })
 export class AdmobService {
-  // Official Google AdMob Test Rewarded Ad Unit ID for Android
-  // Source: https://developers.google.com/admob/android/test-ads
+  // Google AdMob Rewarded Ad Unit ID
+  public readonly REWARDED_AD_UNIT_ID = 'ca-app-pub-3473476447894688/1952605796';
   public readonly GOOGLE_TEST_REWARDED_ID = 'ca-app-pub-3940256099942544/5224354917';
 
   private isInitialized = false;
@@ -43,10 +43,10 @@ export class AdmobService {
 
     try {
       await AdMob.initialize({
-        initializeForTesting: true
+        initializeForTesting: false
       });
       this.isInitialized = true;
-      console.log('✅ [AdMob] Native Google Mobile Ads initialized for testing.');
+      console.log('✅ [AdMob] Native Google Mobile Ads initialized.');
 
       // Setup listeners for reward events
       AdMob.addListener(RewardAdPluginEvents.Rewarded, (reward) => {
@@ -81,10 +81,10 @@ export class AdmobService {
         await this.initNativeAdMob();
       }
 
-      console.log('🎯 [AdMob] Preparing native rewarded ad:', this.GOOGLE_TEST_REWARDED_ID);
+      console.log('🎯 [AdMob] Preparing native rewarded ad:', this.REWARDED_AD_UNIT_ID);
       await AdMob.prepareRewardVideoAd({
-        adId: this.GOOGLE_TEST_REWARDED_ID,
-        isTesting: true
+        adId: this.REWARDED_AD_UNIT_ID,
+        isTesting: false
       });
 
       const rewardItem = await AdMob.showRewardVideoAd();

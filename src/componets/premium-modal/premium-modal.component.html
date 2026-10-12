@@ -12,19 +12,31 @@
     <!-- Ambient Glow Behind Glass -->
     <div class="card-ambient-glow"></div>
 
-    <!-- STATE 1: STANDARD AD UNLOCK PROMPT -->
+    <!-- STATE 1: UNLOCK PROMPT (MOBILE: WATCH AD / DESKTOP: MOBILE AD SYNC & SUBSCRIBE) -->
     <div *ngIf="!(premiumService.isAdPlaying$ | async) && !(premiumService.rewardGrantedAlert$ | async)" class="prompt-content">
       <div class="crown-badge-stage">
         <div class="crown-halo"></div>
         <span class="crown-icon">👑</span>
       </div>
 
-      <div class="badge-pill">1 AD = 1 DAY PASS</div>
+      <!-- Badge Pill -->
+      <div class="badge-pill" *ngIf="isMobile">1 AD = 1 DAY PASS</div>
+      <div class="badge-pill desktop-badge" *ngIf="!isMobile">DAILY PASS REQUIRED</div>
 
-      <h2 class="modal-title">Unlock Daily Access</h2>
-      <p class="modal-subtitle">
-        Watch <strong>1 short sponsor video</strong> to unlock full 24-hour access to all your habits, productivity candles, and diet logs.
-      </p>
+      <!-- Headers: Mobile vs Desktop -->
+      <ng-container *ngIf="isMobile">
+        <h2 class="modal-title">Unlock Daily Access</h2>
+        <p class="modal-subtitle">
+          Watch <strong>1 short sponsor video</strong> to unlock full 24-hour access to all your habits, productivity candles, and diet logs.
+        </p>
+      </ng-container>
+
+      <ng-container *ngIf="!isMobile">
+        <h2 class="modal-title">Unlock Access on Mobile</h2>
+        <p class="modal-subtitle">
+          To get free 24-hour access, view a short sponsor ad on our <strong>mobile app</strong>. Your pass automatically unlocks here on desktop!
+        </p>
+      </ng-container>
 
       <!-- Value Props List -->
       <div class="perks-list">
@@ -32,38 +44,87 @@
           <span class="perk-icon">⚡</span>
           <div class="perk-info">
             <strong>24-Hour Premium Access</strong>
-            <span>Enjoy uninterrupted tracking all day long</span>
+            <span>Enjoy uninterrupted tracking across habits, timer &amp; diet</span>
           </div>
         </div>
-        <div class="perk-item">
+        <div class="perk-item" *ngIf="!isMobile">
+          <span class="perk-icon">🔄</span>
+          <div class="perk-info">
+            <strong>Cross-Device Sync</strong>
+            <span>Unlock once on mobile, seamlessly track on desktop</span>
+          </div>
+        </div>
+        <div class="perk-item" *ngIf="isMobile">
           <span class="perk-icon">🔥</span>
           <div class="perk-info">
             <strong>Habit Streaks &amp; Matrix View</strong>
             <span>Never break your consistency chain</span>
           </div>
         </div>
-        <div class="perk-item">
-          <span class="perk-icon">⏱️</span>
-          <div class="perk-info">
-            <strong>Productivity &amp; Diet Tracking</strong>
-            <span>Full interval logs and nutrition analytics</span>
-          </div>
-        </div>
       </div>
 
-      <!-- Mandatory Watch Action Button -->
-      <button
-        type="button"
-        class="btn-watch-ad"
-        [disabled]="(admobService.isAdLoading$ | async) || (premiumService.isClaimingReward$ | async)"
-        (click)="watchAd()">
-        <span *ngIf="!(admobService.isAdLoading$ | async)">Watch Ad to Unlock (1 Day Free) 🎬</span>
-        <span *ngIf="(admobService.isAdLoading$ | async)">Preparing Sponsor Video... ⏳</span>
-      </button>
+      <!-- MOBILE ACTION: Watch Ad Button (Current behavior) -->
+      <ng-container *ngIf="isMobile">
+        <button
+          type="button"
+          class="btn-watch-ad"
+          [disabled]="(admobService.isAdLoading$ | async) || (premiumService.isClaimingReward$ | async)"
+          (click)="watchAd()">
+          <span *ngIf="!(admobService.isAdLoading$ | async)">Watch Ad to Unlock (1 Day Free) 🎬</span>
+          <span *ngIf="(admobService.isAdLoading$ | async)">Preparing Sponsor Video... ⏳</span>
+        </button>
 
-      <p class="lock-notice">
-        🔒 <span>Daily ad required to proceed into app</span>
-      </p>
+        <p class="lock-notice">
+          🔒 <span>Daily ad required to proceed into app</span>
+        </p>
+      </ng-container>
+
+      <!-- DESKTOP ACTIONS: Play Store, Subscribe & Sync Check -->
+      <div class="desktop-actions" *ngIf="!isMobile">
+        <!-- Play Store Button (If not installed) -->
+        <a
+          [href]="playStoreUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="btn-desktop-playstore"
+          title="Open Google Play Store">
+          <span class="btn-action-icon">📲</span>
+          <div class="btn-action-text">
+            <strong>Get on Google Play</strong>
+            <span>View ad on mobile app if not installed</span>
+          </div>
+          <span class="btn-arrow">↗</span>
+        </a>
+
+        <!-- Subscribe Button -->
+        <button
+          type="button"
+          class="btn-desktop-subscribe"
+          (click)="onSubscribe()"
+          title="Subscribe to Premium">
+          <span class="btn-action-icon">👑</span>
+          <div class="btn-action-text">
+            <strong>Subscribe (No Ads)</strong>
+            <span>Don't want to watch ads on mobile?</span>
+          </div>
+        </button>
+
+        <!-- Subscription message alert -->
+        <div class="subscribe-notice" *ngIf="subscribeMessage">
+          {{ subscribeMessage }}
+        </div>
+
+        <!-- Check Status / Refresh Button -->
+        <button
+          type="button"
+          class="btn-check-access"
+          [disabled]="isCheckingAccess"
+          (click)="checkAccess()"
+          title="Check if 24h pass was unlocked on mobile">
+          <span class="check-icon" [class.spin-anim]="isCheckingAccess">🔄</span>
+          <span>{{ isCheckingAccess ? 'Checking Access...' : 'Already watched on mobile? Check Access' }}</span>
+        </button>
+      </div>
     </div>
 
     <!-- STATE 2: INTERACTIVE SPONSOR VIDEO COUNTDOWN PLAYER -->
